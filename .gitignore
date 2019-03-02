@@ -1,0 +1,8 @@
+.vs/
+Binaries/
+Intermediate/
+Projects/
+Misc/
+
+Radon.sln
+premake5.exe
