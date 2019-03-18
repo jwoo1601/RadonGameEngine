@@ -2,7 +2,7 @@
 
 BuildSystemExec="premake5"
 BuildScriptFile="Build.lua"
-ProjectType="xcode"
+ProjectType="xcode4"
 
 set echo off
 
@@ -13,7 +13,7 @@ fi
 
 if [ -f $BuildSystemExec ]
 then
-	eval $BuildSystemExec --file=$BuildScriptFile $ProjectType $*
+	eval ./$BuildSystemExec --file=$BuildScriptFile $ProjectType $*
 else
 	echo "failed to locate the build system executable: $BuildSystemExec"
 fi
