@@ -180,10 +180,11 @@ workspace "Radon"
             "RADON_CORE"
         }
 
-        postbuildcommands
-        {
-            ("{COPY} %{cfg.buildtarget.relpath} ../" .. GetBinaryPath "UnitTest")
-        }
+        filter "system:windows"
+            postbuildcommands
+            {
+                ("{COPY} %{cfg.buildtarget.relpath} ../" .. GetBinaryPath "UnitTest")
+            }
 
 
     project "Game"
