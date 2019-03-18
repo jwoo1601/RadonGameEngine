@@ -44,6 +44,10 @@ function ListSourceDir(projectName)
 
     return fileList;
 end
+
+function GetBinaryPath(projectName)
+    return AsPath(BinaryDir, projectName, "%{cfg.platform}", "%{cfg.buildcfg}");
+end
 -----------------------------------
 
 workspace "Radon"
@@ -54,9 +58,8 @@ workspace "Radon"
 
     architecture "x86"
 
-    BinaryPath = AsPath(BinaryDir, "%{prj.name}", "%{cfg.platform}", "%{cfg.buildcfg}");
     -- Binaries/Win32|Win64|Mac/Debug|Release
-    targetdir (BinaryPath)
+    targetdir (GetBinaryPath "%{prj.name}")
     targetprefix "Radon"
     -- Intermediate/Win32|Win64|Mac/Debug|Release
     objdir (ObjectDir)
@@ -161,7 +164,7 @@ workspace "Radon"
         {
             AsPath(LibraryDir, "**", IncludeDir ,"**"),
             -- Includes Radon/Launch
-            AsPath(SourceDir, "Launch", "Public", "**")
+            -- AsPath(SourceDir, "Game", "Public", "**")
         }
 
         --links { "" }
@@ -179,11 +182,11 @@ workspace "Radon"
 
         postbuildcommands
         {
-            --(AsPath("{COPY} %{cfg.buildtarget.relpath} ../Binaries", BinaryPath))
+            ("{COPY} %{cfg.buildtarget.relpath} ../" .. GetBinaryPath "UnitTest")
         }
 
 
-    project "Launch"
+    project "Game"
         language "C++"
         kind "WindowedApp"
         location (ProjectDir)
@@ -205,12 +208,12 @@ workspace "Radon"
         -- Source/Launch/** -> Source/**
         vpaths
         {
-            [AsPath(SourceDir, "*")] = AsPath(SourceDir, "Launch", "**");
+            [AsPath(SourceDir, "*")] = AsPath(SourceDir, "Game", "**");
         }
 
         defines
         {
-            "RADON_LAUNCH"
+            "RADON_Game"
         }
 
 
@@ -223,13 +226,14 @@ workspace "Radon"
 
         includedirs
         {
-            AsPath(LibraryDir, "**", IncludeDir ,"**"),
+            AsPath(LibraryDir, "Catch2", IncludeDir),
+            AsPath(LibraryDir, "Catch2", IncludeDir ,"**"),
             -- Includes Radon/Core
             AsPath(SourceDir, "Core", PublicDir),
             AsPath(SourceDir, "Core", PublicDir, "**"),
             -- Includes Radon/Launch
-            AsPath(SourceDir, "Launch", PublicDir),
-            AsPath(SourceDir, "Launch", PublicDir, "**"),
+            AsPath(SourceDir, "Game", PublicDir),
+            AsPath(SourceDir, "Game", PublicDir, "**"),
         }        
 
         links
