@@ -21,7 +21,7 @@ namespace Radon::Memory
 		virtual void PrintMemoryDump() const;
 
 		// IAllocator Interface
-		virtual void* Allocate(size_t size, uint8 alignment) override;
+		virtual void* Allocate(TSize size, uint8 alignment, TIndex offset, int32 flag) override;
 
 		[[deprecated("use of {Deallocate} is prohibited since this is a linear allocator")]]
 		virtual void Deallocate(void *ptr) override { }

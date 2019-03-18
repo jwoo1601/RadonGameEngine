@@ -4,22 +4,23 @@
 
 namespace Radon::Memory
 {
-	template <typename A = VDefaultAllocator>
-	struct SMemoryScope
+	template <typename A = VDefaultAllocator, typename = TEnableIf<TIsDerivedFrom<A, IAllocator>>>
+	struct TMemoryScope
 	{
 		// Class Attributes
-		CLASS_NOT_COPYABLE(SMemoryScope);
+		CLASS_NOT_COPYABLE(TMemoryScope);
 
 		// Assertions
-		static_assert(std::is_base_of_v<IAllocator, A> && std::is_default_constructible_v<A>, "{A} must be of kind IAllocator && default constructible!");
+		static_assert(std::is_default_constructible_v<A>, "{A} must be of kind IAllocator && default constructible!");
 
+	public:
 		// Type Definitions
 		typedef A AllocatorType;
 
 	public:
 
 		// Constructors
-		SMemoryScope(size_t memorySize)
+		TMemoryScope(TSize memorySize)
 		{
 			if (memorySize > 0)
 			{
@@ -29,7 +30,7 @@ namespace Radon::Memory
 		}
 
 		// Destructors
-		~SMemoryScope()
+		~TMemoryScope()
 		{
 			if (m_memoryPtr)
 			{
@@ -43,7 +44,7 @@ namespace Radon::Memory
 			return m_memoryPtr;
 		}
 
-		FORCEINLINE size_t GetMemorySize() const
+		FORCEINLINE TSize GetMemorySize() const
 		{
 			return m_memorySize;
 		}
@@ -51,6 +52,6 @@ namespace Radon::Memory
 	private:
 		AllocatorType	 m_alloc;
 		void			*m_memoryPtr;
-		size_t			 m_memorySize;
+		TSize			 m_memorySize;
 	};
 }

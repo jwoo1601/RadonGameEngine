@@ -11,22 +11,12 @@
 
 // STL Includes
 #include <memory>
-#include <list>
-#include <forward_list>
-
-template <typename T>
-using TList = std::list<T>;
-
-template <typename T>
-using TForwardList = std::forward_list<T>;
-
-// Platform Includes
-#include "RadonPlatform.h"
-
 
 // Core Includes
-// #include "RadonMemory.h"
-
+#include "RadonPlatform.h"
+#include "RadonConfig.h"
+#include "RadonAssert.h"
+#include "RadonTemplates.h"
 
 // Additional Includes
 
@@ -119,5 +109,3 @@ CLASS_NOT_CM_ASSIGNABLE(className)
 #define RADON_IS_EXECUTABLE		0
 #define RADON_BINARY_UNKNOWN	1
 #endif
-
-#define MEMORY_PROFILING		1

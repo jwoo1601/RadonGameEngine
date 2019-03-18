@@ -1,0 +1,20 @@
+VObject (= UObject)
+GetWorld()
+
+VSceneObject : VObject (= AActor)
+GetLevel()
+
+MemoryManager
+	CreateObject()
+
+World : MemoryManager
+	Level
+	Player
+
+Level : MemoryManager
+	GetMemoryPool()
+	Level Objects
+	Character
+	Scene Objects (NPCs)
+
+	

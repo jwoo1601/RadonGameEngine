@@ -10,7 +10,7 @@ namespace Radon::Memory
 
 		/* IAllocator Interface */
 		// allocates new memory space of {size} (in words) with {alignment}
-		virtual void* Allocate(size_t size, uint8 alignment) = 0;
+		virtual void* Allocate(TSize size, uint8 alignment, TIndex offset, int32 flag) = 0;
 
 		// deallocates the memory space {ptr}
 		// NOTE: may not be available in certain child classes
@@ -25,9 +25,11 @@ namespace Radon::Memory
 
 		/* IAllocator Interface*/
 
-		virtual void* Allocate(size_t size, uint8 alignment) override;
+		virtual void* Allocate(TSize size, uint8 alignment, TIndex offset, int32 flag) override;
 		virtual void Deallocate(void *ptr) override;
 	};
+
+	class VMemorySpace;
 
 	class RADONCORE_API VBaseAllocator : public IAllocator
 	{
@@ -35,12 +37,14 @@ namespace Radon::Memory
 
 	public:
 
-		// Constructors and Destructors
-		VBaseAllocator(void *basePtr, size_t totalSize);
+		VBaseAllocator();
+		explicit VBaseAllocator(const VMemorySpace &memorySpace);
+
 		virtual ~VBaseAllocator();
 
 
-		// BaseAllocator Public Methods
+		/* VBaseAllocator Interface */
+
 		FORCEINLINE void* GetBasePtr() const
 		{
 			return m_basePtr;
@@ -67,7 +71,9 @@ namespace Radon::Memory
 		}
 
 	protected:
-
+#if RADON_ENABLE_PROFILE
+		SName m_profileName;
+#endif
 		void *m_basePtr;
 		size_t m_totalMemorySize;
 		size_t m_usedMemorySize;
@@ -78,30 +84,30 @@ namespace Radon::Memory
 	// allocates newn memory space for an object of T
 	// NOTE: this function does not call the constructor
 	template <typename T>
-	FORCEINLINE T* AllocateNew(IAllocator &alloc)
+	FORCEINLINE T* AllocateNew(IAllocator &alloc, TIndex offset = 0, int32 flag = 0)
 	{
-		return (T*)alloc.Allocate(sizeof(T), alignof(T));
+		return (T*)alloc.Allocate(sizeof(T), ALIGN_OF(T), offset, flag);
 	}
 
 	// allocates new memory space for an array of objects of T with {size}
 	// NOTE: this function does not call the constructor of the elements
 	template <typename T>
-	T* AllocateNewArray(IAllocator &arrayAlloc, size_t size)
+	T* AllocateNewArray(IAllocator &arrayAlloc, TSize size, TIndex offset = 0, int32 flag = 0)
 	{
 		// size > 0
 
 		// sets the size of the array header as that of an element so that we can align the memory in a nice way
-		uint8 arrayHeaderSize = sizeof(size_t) / sizeof(T);
-		if constexpr (sizeof(size_t) % sizeof(T) != 0)
+		uint8 arrayHeaderSize = sizeof(TSize) / sizeof(T);
+		if constexpr (sizeof(TSize) % sizeof(T) != 0)
 		{
 			arrayHeaderSize++;
 		}
 
 		// makes the size of the array stored in the preceding bytes of the elements
 		// | size | arr[0] | arr[1] | arr[2] | ... |
-		T *arr = ((T*)arrayAlloc.Allocate(sizeof(T) * (arrayHeaderSize + size), alignof(T))) + arrayHeaderSize;
+		T *arr = ((T*)arrayAlloc.Allocate(sizeof(T) * (arrayHeaderSize + size), ALIGN_OF(T), offset, flag)) + arrayHeaderSize;
 		// stores the size of the array
-		*(((size_t *)arr) - 1) = size;
+		*(((TSize *)arr) - 1) = size;
 
 		return arr;
 	}
@@ -136,8 +142,8 @@ namespace Radon::Memory
 	{
 		if (arr)
 		{
-			constexpr uint8 arrayHeaderSize = sizeof(size_t) / sizeof(T);
-			if (sizeof(size_t) % sizeof(T) != 0)
+			constexpr uint8 arrayHeaderSize = sizeof(TSize) / sizeof(T);
+			if (sizeof(TSize) % sizeof(T) != 0)
 			{
 				arrayHeaderSize++;
 			}
@@ -148,6 +154,7 @@ namespace Radon::Memory
 
 	// constructs an object of T by allocating new memory space
 	// NOTE: this function calls the constructor of newly created object
+	// NOTE: this function does not allow to specify the offset and flag for this allocation
 	template <typename T, typename... Args>
 	FORCEINLINE T* ConstructNew(IAllocator &alloc, Args &&...args)
 	{
@@ -158,11 +165,11 @@ namespace Radon::Memory
 	// constructs an array of objects of T with size by allocating new memory space
 	// NOTE: this function calls the constructor of each element
 	template <typename T>
-	FORCEINLINE T* ConstructNewArray(IAllocator &arrayAlloc, size_t size)
+	FORCEINLINE T* ConstructNewArray(IAllocator &arrayAlloc, TSize size, TIndex offset = 0, int32 flag = 0)
 	{
-		T *arr = AllocateNewArray(arrayAlloc, size);
+		T *arr = AllocateNewArray(arrayAlloc, size, offset, flag);
 
-		for (size_t i = 0; i < size; i++)
+		for (TSize i = 0; i < size; i++)
 		{
 			// NOTE: the new operator with the address of the memory as a parameter only calls the constructor
 			// In other words, this call does not allocate new memory space
@@ -200,10 +207,10 @@ namespace Radon::Memory
 	{
 		if (arr)
 		{
-			size_t size = *(((size_t*)arr) - 1);
+			TSize size = *(((TSize*)arr) - 1);
 
 			// should be i = size ?
-			for (size_t i = 0; i < size; i++)
+			for (TSize i = 0; i < size; i++)
 			{
 				arr[i].~T();
 			}

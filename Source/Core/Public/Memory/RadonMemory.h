@@ -9,4 +9,5 @@
 #include "ProxyAllocator.h"
 
 #include "Memory.hpp"
-#include "MemoryScope.h"
+#include "MemoryScope.hpp"
+#include "MemoryPool.h"
