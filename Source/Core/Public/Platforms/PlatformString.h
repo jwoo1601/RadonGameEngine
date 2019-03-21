@@ -3,18 +3,16 @@
 #ifndef RADON_PLATFORM_STRING_H
 #define RADON_PLATFORM_STRING_H
 
+#pragma warning(disable: 4996)
+
 #if RADON_PLATFORM_WINDOWS
-#include "PlatformWindowsString.h"
-
+	#include "PlatformWindowsString.h"
 #elif RADON_PLATFORM_MAC
-#include "PlatformMacString.h"
-
+	#include "PlatformMacString.h"
 #elif RADON_PLATFORM_LINUX
-#include "PlatformLinuxString.h"
-
+	#include "PlatformLinuxString.h"
 #else
-#include "PlatformBaseString.h"
-
+	#include "PlatformBaseString.h"
 #endif
 
 namespace Radon

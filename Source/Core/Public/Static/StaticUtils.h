@@ -14,7 +14,7 @@ namespace Radon::Static
 	}
 
 	// Compile-time helper function that calculates the number of digits in {value} including -(minus) sign in case of negative numbers
-	constexpr int32 CalculateNumOfDigits(int32 value)
+	constexpr TSize CalculateNumOfDigits(int32 value)
 	{
 		return value < 0 ? 1 + CalculateNumOfDigits(-value) : value < 10 ? 1 : 1 + CalculateNumOfDigits(value / 10);
 	}
@@ -48,6 +48,12 @@ namespace Radon::Static
 	{
 		static_assert(Int >= 0, "Int must not be negative");
 	};
+
+	template<typename IntType>
+	constexpr typename IntType StaticPow(IntType base, IntType exponent)
+	{
+		return exponent > 0 ? base * StaticPow(base, exponent - 1) : 1;
+	}
 }
 
 #endif

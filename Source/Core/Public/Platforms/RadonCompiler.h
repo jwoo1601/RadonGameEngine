@@ -4,17 +4,13 @@
 #define RADON_COMPILER_H
 
 #if defined(_MSC_VER)
-#include "CompilerMSVC.h"
-
+	#include "CompilerMSVC.h"
 #elif defined(__clang__)
-#include "CompilerClang.h"
-
+	#include "CompilerClang.h"
 #elif defined(__GNUC__)
-#include "CompilerGCC.h"
-
+	#include "CompilerGCC.h"
 #else
-#include "CompilerDefault.h"
-
+	#include "CompilerDefault.h"
 #endif
 
 namespace Radon::Config

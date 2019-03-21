@@ -125,7 +125,7 @@ namespace Radon::Memory
 			}
 
 			// alloc ctor parameters?
-			void *pAllocPaddingStart = IncrementPointer(m_pBase, sizeof(AllocatorType);
+			void *pAllocPaddingStart = IncrementPointer(m_pBase, sizeof(AllocatorType));
 			uint8 allocPadding = GetForwardAlignmentPadding(pAllocPaddingStart, alignof(SMemoryBlock));
 
 			m_pAlloc = new(m_pBase) AllocatorType(IncrementPointer(pAllocPaddingStart, allocPadding), m_poolSize - sizeof(AllocatorType));
@@ -156,7 +156,7 @@ namespace Radon::Memory
 
 			if (m_currentBlockCount < m_maxBlockCount)
 			{
-				uint8 dataPadding = GetForwardAlignmentPadding(m_pCurrentBlock->m_startPtr
+//				uint8 dataPadding = GetForwardAlignmentPadding(m_pCurrentBlock->m_startPtr
 				if (!m_pCurrentBlock || m_pCurrentBlock->GetAvailableMemorySize(m_blockDataSize) < size)
 				{
 					pNewBlock->m_pPrevBlock = m_pCurrentBlock;

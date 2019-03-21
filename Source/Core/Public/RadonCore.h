@@ -1,13 +1,5 @@
-#pragma once
-
-// API Definition
-#ifdef RADON_CORE
-#define RADONCORE_API __declspec(dllexport)
-
-#else
-#define RADONCORE_API __declspec(dllimport)
-#endif
-
+#ifndef RADON_CORE_H
+#define RADON_CORE_H
 
 // STL Includes
 #include <memory>
@@ -17,6 +9,7 @@
 #include "RadonConfig.h"
 #include "RadonAssert.h"
 #include "RadonTemplates.h"
+#include "RadonCompiler.h"
 
 // Additional Includes
 
@@ -108,4 +101,6 @@ CLASS_NOT_CM_ASSIGNABLE(className)
 
 #define RADON_IS_EXECUTABLE		0
 #define RADON_BINARY_UNKNOWN	1
+#endif
+
 #endif

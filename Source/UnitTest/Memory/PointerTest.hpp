@@ -7,14 +7,15 @@
 #include <iostream>
 
 #include "RadonCore.h"
-#include "RadonMemory.h"
+//#include "RadonMemory.h"
 
 #include "StaticString.h"
+#include "StaticConverter.h"
 
 #include "catch.hpp"
 
 using namespace Radon;
-using namespace Radon::Memory;
+//using namespace Radon::Memory;
 using namespace Radon::Static;
 
 class PointerTestUnit
@@ -23,10 +24,14 @@ public:
 
 	void Test33()
 	{
-		constexpr auto aaa = TStaticStringBuilder<'c', 'd', 'b'>::MakeStaticString();
+/*		constexpr TStaticString<4> BB = TEXT("SDFS");
+		constexpr TStaticString<7> SDF = TEXT("DSFSSDF");
+		constexpr auto KK = TStaticStringBuilder<'a', 'b', 'c'>::MakeStaticString();
 		constexpr auto S1 = MakeStringLiteral(TEXT("AB"));
 		constexpr auto S2 = MakeStringLiteral(TEXT("CD"));
-		constexpr auto R = S1 + S2;
+		constexpr auto R = S1 + S2; */
+
+		constexpr auto CC = StaticItoa32<-242423422>();
 	}
 
 	class A
@@ -57,7 +62,7 @@ public:
 
 	void UnitTest()
 	{
-		TMemoryScope scope(1024);
+	/*	TMemoryScope scope(1024);
 		VLinearAllocator alloc(scope.GetMemoryPtr(), scope.GetMemorySize());
 
 		auto intArray = AllocateNewArray<int>(alloc, 10);
@@ -79,6 +84,9 @@ public:
 
 		constexpr bool sss = TIsDerivedFrom<VLinearAllocator, VLinearAllocator>;
 		A1<int, long>::NewType C;
+		 */
+
+		Test33();
 	}
 
 	const void* ConvertPointers(const void *ptr, uint8 val)

@@ -14,10 +14,12 @@ namespace Radon::Static
 	public:
 
 		constexpr TStringLiteral(const TChar(&refLiteral)[Size + 1])
-			: m_refLiteral(
-				//RADON_CASSERT(refLiteral[Size] == TEXT('0')),
+			: m_refLiteral
+			(
+//				RADON_CASSERT(refLiteral[Size] == TEXT('\0')),
 				refLiteral
-			) { }
+			)
+		{ }
 
 		constexpr TChar operator[](TIndex index) const
 		{
@@ -36,42 +38,18 @@ namespace Radon::Static
 		return TStringLiteral<SizeWithNull - 1>(refLiteral);
 	}
 
-	template <TChar... Chars>
-	struct TStaticStringBuilder
-	{
-		typedef typename TStaticString<sizeof...(Chars)> StringType;
-		typedef typename TStringLiteral<sizeof...(Chars)> LiteralType;
-
-		static constexpr StringType MakeStaticString()
-		{
-			return LiteralType({ Args..., TEXT('\0') });
-		}
-	};
-
-/*	public:
-
-		constexpr TStaticStringWrapper()
-			: m_string(TStringLiteral<sizeof...(Chars)>({ Args..., TEXT('\0') }))
-		{
-
-		}
-
-	private:
-		const StringType m_string;
-		//const TChar m_str[sizeof...(Chars) + 1];
-	}; */
-
 	// A string class specifically designed for compile-time usage, holding a const array of chars
 	template <TSize TotalSize>
 	class TStaticString
 	{
 	public:
 
-/*		constexpr TStaticString(const TStringLiteral<TotalSize> &refLiteral)
-			: TStaticString{ refLiteral, TMakeSequence<TotalSize>{ } }
-		{ } */
+		constexpr TStaticString(const TStringLiteral<TotalSize> &refLiteral)
+			: TStaticString{ refLiteral,
+							 TMakeSequence<TotalSize>{ } }
+		{ }
 
-		template <TSize Size1>//, typename = TEnableIf<Size1 <= TotalSize>>
+		template <TSize Size1, typename = TEnableIf<Size1 <= TotalSize>>
 		constexpr TStaticString(const TStringLiteral<Size1>				&refLiteral1,
 								const TStringLiteral<TotalSize - Size1> &refLiteral2)
 			: TStaticString{ refLiteral1,
@@ -107,17 +85,17 @@ namespace Radon::Static
 		}
 
 		template <TSize Size1, TIndex... Indicies1, TIndex... Indicies2>
-		constexpr TStaticString(const TStringLiteral<TotalSize>		   &refLiteral1,
+		constexpr TStaticString(const TStringLiteral<Size1>				&refLiteral1,
 								const TStringLiteral<TotalSize - Size1> &refLiteral2,
 								TSequence<Indicies1...>,
 								TSequence<Indicies2...>)
-			: m_str { refLiteral1[Indicies1]..., refLiteral[Indicies2]..., TEXT('\0') }
+			: m_str { refLiteral1[Indicies1]..., refLiteral2[Indicies2]..., TEXT('\0') }
 		{
 
 		}
 
 	private:
-		TChar m_str[TotalSize + 1];
+		const TChar m_str[TotalSize + 1];
 	};
 
 	template <TSize Size1, TSize Size2>
@@ -126,6 +104,18 @@ namespace Radon::Static
 	{
 		return TStaticString<Size1 + Size2>(refLiteral1, refLiteral2);
 	}
+
+	template <TChar... Chars>
+	struct TStaticStringBuilder
+	{
+		typedef typename TStaticString<sizeof...(Chars)> StringType;
+		typedef typename TStringLiteral<sizeof...(Chars)> LiteralType;
+
+		static constexpr StringType MakeStaticString()
+		{
+			return LiteralType({ Chars... });
+		}
+	};
 }
 
 #endif
