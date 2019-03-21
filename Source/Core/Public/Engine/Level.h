@@ -8,7 +8,7 @@
 
 namespace Radon
 {
-	class RADONCORE_API VLevel : public VObject
+	class RADON_API VLevel : public VObject
 	{
 		INHERITS_FROM(VObject);
 	public:

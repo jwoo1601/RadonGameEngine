@@ -3,6 +3,8 @@
 #ifndef RADON_PLATFORM_STRING_H
 #define RADON_PLATFORM_STRING_H
 
+#include "PlatformConfig.h"
+
 #pragma warning(disable: 4996)
 
 #if RADON_PLATFORM_WINDOWS

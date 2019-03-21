@@ -1,5 +1,7 @@
 // Copyright 2019 Simon Kim All Rights Reserved.
 
+#ifdef _MSC_VER
+
 #ifndef RADON_COMPILER_MSVC_H
 #define RADON_COMPILER_MSVC_H
 
@@ -23,9 +25,9 @@
 #define RADON_COMPILER_VERSION								_MSC_FULL_VER
 
 #ifdef RADON_CORE
-	#define RADON_API											__declspec(dllexport)
+	#define RADON_API										__declspec(dllexport)
 #else
-	#define RADON_API											__declspec(dllimport)
+	#define RADON_API										__declspec(dllimport)
 #endif
 
 #define FORCEINLINE											__forceinline
@@ -54,7 +56,7 @@
 
 	#define RADON_COMPILER_SUPPORTS_NOEXCEPT				1
 	#define RADON_NOEXCEPT									noexcept
-	#define RADON_NOEXCEPT(x)								noexcept(x)
+	#define RADON_NOEXCEPT_(x)								noexcept(x)
 
 	#define RADON_COMPILER_SUPPORTS_ALIGNOF					1
 	#define RADON_ALIGNOF(x)								alignof(x)
@@ -69,7 +71,7 @@
 	#define RADON_REF_QUALIFIER(x)							x
 
 	#define RADON_DEPRECATED								[[deprecated]]
-	#define RADON_DEPRECATED(x)								[[deprecated(x)]]
+	#define RADON_DEPRECATED_(x)							[[deprecated(x)]]
 
 #else
 	#define RADON_COMPILER_SUPPORTS_CPP14					0
@@ -133,3 +135,5 @@ namespace Radon::Config
 }
 
 #endif // !RADON_COMPILER_MSVC_H
+
+#endif

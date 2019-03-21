@@ -15,7 +15,7 @@ namespace Radon::Render
 		SRenderTargetInfo() = delete;
 	};
 
-	class RADONCORE_API VRenderer
+	class RADON_API VRenderer
 	{
 	public:
 

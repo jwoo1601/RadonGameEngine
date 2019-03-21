@@ -6,19 +6,23 @@
 
 namespace Radon::Memory
 {
-	class RADONCORE_API VLinearAllocator : public VBaseAllocator
+	class RADON_API VLinearAllocator : public VBaseAllocator
 	{
 		INHERITS_FROM(VBaseAllocator)
 
 	public:
+		
+		VLinearAllocator();
+		VLinearAllocator(const SAllocatorInitializer &initializer);
 
-		VLinearAllocator(void *basePtr, size_t totalSize);
 		virtual ~VLinearAllocator();
 
-		// VLinearAllocator Interface
+		/* VLinearAllocator Interface */
 		virtual void Clear();
 
+#if RADON_ENABLE_MEMORY_PROFILE
 		virtual void PrintMemoryDump() const;
+#endif
 
 		// IAllocator Interface
 		virtual void* Allocate(TSize size, uint8 alignment, TIndex offset, int32 flag) override;

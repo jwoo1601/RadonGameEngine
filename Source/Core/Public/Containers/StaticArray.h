@@ -7,7 +7,7 @@
 namespace Radon
 {
 	template <typename T, TSize Size>
-	class RADONCORE_API TStaticArray
+	class RADON_API TStaticArray
 	{
 		typedef TImmutableArray<T> MyType;
 
