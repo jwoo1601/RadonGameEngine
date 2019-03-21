@@ -38,7 +38,7 @@ namespace Radon::Memory
 	public:
 
 		VBaseAllocator();
-		explicit VBaseAllocator(const VMemorySpace &memorySpace);
+//		explicit VBaseAllocator(const VMemorySpace &memorySpace);
 
 		virtual ~VBaseAllocator();
 

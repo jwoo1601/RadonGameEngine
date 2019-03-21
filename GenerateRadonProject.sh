@@ -13,7 +13,7 @@ fi
 
 if [ -f $BuildSystemExec ]
 then
-	eval ./$BuildSystemExec --file=$BuildScriptFile $ProjectType $*
+	exec $BuildSystemExec --file=$BuildScriptFile $ProjectType $*
 else
 	echo "failed to locate the build system executable: $BuildSystemExec"
 fi

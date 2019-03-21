@@ -5,7 +5,7 @@
 namespace Radon::Memory
 {
 	VLinearAllocator::VLinearAllocator(void *basePtr, size_t totalSize)
-		: Super(basePtr, totalSize)
+//		: Super(basePtr, totalSize)
 	{
 		m_currentPos = m_basePtr;
 	}
@@ -25,8 +25,8 @@ namespace Radon::Memory
 	void VLinearAllocator::PrintMemoryDump() const
 	{
 		printf(
-				"basePtr:                     %x\n"
-				"currentPos:                  %x\n"
+				"basePtr:                     %p\n"
+				"currentPos:                  %p\n"
 				"totalMemorySize:             %d bytes\n"
 				"usedMemorySize:              %d bytes\n"
 				"availableMemorySize:         %d bytes\n"
@@ -40,7 +40,7 @@ namespace Radon::Memory
 			);
 	}
 
-	void* VLinearAllocator::Allocate(size_t size, uint8 alignment)
+	void* VLinearAllocator::Allocate(size_t size, uint8 alignment, TIndex offset, int32 flag)
 	{
 		void *resultPtr = nullptr;
 

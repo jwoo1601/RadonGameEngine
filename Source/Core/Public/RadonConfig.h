@@ -3,8 +3,29 @@
 #ifndef RADON_CONFIG_H
 #define RADON_CONFIG_H
 
+#include "StaticConverter.h"
+
 #define RADON_VERSION			 100
-#define RADON_VERSION_STRING	"1.0.0"
+
+namespace Radon::Config
+{
+	struct SRadonConfig
+	{
+		constexpr int32 GetVersion()
+		{
+			return RADON_VERSION;
+		}
+
+		constexpr auto GetVersionString()
+			-> decltype(VersionString)
+		{
+			return VersionString;
+		}
+
+	private:
+		static constexpr auto VersionString = Static::StaticItoa32<RADON_VERSION>();
+	};
+}
 
 #ifndef RADON_DEBUG
 	#if defined(_DEBUG)
