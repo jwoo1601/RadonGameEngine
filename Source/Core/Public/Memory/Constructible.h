@@ -4,9 +4,9 @@
 
 namespace Radon::Memory
 {
-	struct RADONCORE_API
+	struct RADON_API
 
-	class RADONCORE_API INTERFACE IConstructible
+	class RADON_API INTERFACE IConstructible
 	{
 	public:
 

@@ -1,10 +1,16 @@
-#pragma once
+// Copyright 2019 Simon Kim All Rights Reserved.
+
+#ifndef RADON_ALLOCATOR_H
+#define RADON_ALLOCATOR_H
 
 #include "RadonCore.h"
+#include "Name.h"
 
 namespace Radon::Memory
 {
-	class RADONCORE_API INTERFACE IAllocator
+	using namespace String;
+
+	class RADON_API IAllocator
 	{
 	public:
 
@@ -17,67 +23,103 @@ namespace Radon::Memory
 		virtual void Deallocate(void *ptr) = 0;
 	};
 
-	class RADONCORE_API VDefaultAllocator : public IAllocator
+	class RADON_API VDefaultAllocator : public IAllocator
 	{
 		INHERITS_FROM(IAllocator)
 
 	public:
 
-		/* IAllocator Interface*/
+		/* IAllocator Interface */
 
 		virtual void* Allocate(TSize size, uint8 alignment, TIndex offset, int32 flag) override;
 		virtual void Deallocate(void *ptr) override;
 	};
 
-	class VMemorySpace;
+	struct RADON_API SAllocatorInitializer
+	{
+		SAllocatorInitializer();
+		SAllocatorInitializer(void *pBase, TSize capacity, TSize reservedSize = 0);
+#if RADON_ENABLE_MEMORY_PROFILE
+		SAllocatorInitializer(SName profileName, void *pBase, TSize capacity, TSize reservedSize = 0);
 
-	class RADONCORE_API VBaseAllocator : public IAllocator
+		FORCEINLINE SName GetProfileName() const
+		{
+			return m_profileName;
+		}
+#endif
+
+		FORCEINLINE void* GetBase() const
+		{
+			return m_pBase;
+		}
+
+		FORCEINLINE TSize GetCapacity() const
+		{
+			return m_capacity;
+		}
+
+		FORCEINLINE TSize GetReservedSize() const
+		{
+			return m_reservedSize;
+		}
+
+	private:
+#if RADON_ENABLE_MEMORY_PROFILE
+		SName m_profileName;
+#endif
+		void *m_pBase;
+		TSize m_capacity;
+		TSize m_reservedSize;
+	};
+
+	class RADON_API VBaseAllocator : public IAllocator
 	{
 		INHERITS_FROM(IAllocator)
 
 	public:
 
 		VBaseAllocator();
-//		explicit VBaseAllocator(const VMemorySpace &memorySpace);
+		explicit VBaseAllocator(const SAllocatorInitializer &initializer);
 
 		virtual ~VBaseAllocator();
 
+#if RADON_ENABLE_MEMORY_PROFILE
+		virtual void PrintMemoryDump() const;
+#endif
 
-		/* VBaseAllocator Interface */
-
-		FORCEINLINE void* GetBasePtr() const
+		FORCEINLINE void* GetBase() const
 		{
-			return m_basePtr;
+			return m_pBase;
 		}
 
-		FORCEINLINE size_t GetTotalMemorySize() const
+		FORCEINLINE TSize GetTotalMemorySize() const
 		{
 			return m_totalMemorySize;
 		}
 
-		FORCEINLINE size_t GetUsedMemorySize() const
+		FORCEINLINE TSize GetUsedMemorySize() const
 		{
 			return m_usedMemorySize;
 		}
 
-		FORCEINLINE size_t GetAvailableMemorySize() const
+		FORCEINLINE TSize GetAvailableMemorySize() const
 		{
 			return m_totalMemorySize - m_usedMemorySize;
 		}
 
-		FORCEINLINE size_t GetNumAllocations() const
+		FORCEINLINE TSize GetNumAllocations() const
 		{
 			return m_numAllocations;
 		}
 
 	protected:
-#if RADON_ENABLE_PROFILE
+#if RADON_ENABLE_MEMORY_PROFILE
 		SName m_profileName;
 #endif
-		void *m_basePtr;
-		size_t m_totalMemorySize;
-		size_t m_usedMemorySize;
-		size_t m_numAllocations;
+		void *m_pBase;
+		TSize m_totalMemorySize;
+		TSize m_usedMemorySize;
+		TSize m_numAllocations;
 	};
 
 	
@@ -218,5 +260,6 @@ namespace Radon::Memory
 			DeallocateArray(arrayAlloc, arr);
 		}
 	}
-
 }
+
+#endif

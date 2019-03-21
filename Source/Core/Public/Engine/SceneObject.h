@@ -10,7 +10,7 @@ namespace Radon
 {
 	// Objects that can be placed into a {VLevel}
 	// NOTE: this is under direct management of {VLevel}
-	class RADONCORE_API VSceneObject : public VObject
+	class RADON_API VSceneObject : public VObject
 	{
 		INHERITS_FROM(VObject)
 

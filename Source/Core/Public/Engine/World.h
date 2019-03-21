@@ -6,7 +6,7 @@
 
 namespace Radon
 {
-	class RADONCORE_API VWorld
+	class RADON_API VWorld
 	{
 	public:
 

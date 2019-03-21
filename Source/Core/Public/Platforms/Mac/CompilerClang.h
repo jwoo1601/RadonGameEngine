@@ -1,5 +1,7 @@
 // Copyright 2019 Simon Kim All Rights Reserved.
 
+#ifdef __clang__
+
 #ifndef RADON_COMPILER_CLANG_H
 #define RADON_COMPILER_CLANG_H
 
@@ -35,13 +37,21 @@
 	#if __has_declspec_attribute(dllexport)
 		#define RADON_API									__declspec(dllexport)
 	#else
-		#define RADON_API									__attribute__(dllexport)
+		#if __has_attribute(dllexport)
+			#define RADON_API								__attribute__(dllexport)
+		#else
+			#define RADON_API
+		#endif
 	#endif
 #else
 	#if __has_declspec_attribute(dllimport)
 		#define RADON_API									__declspec(dllimport)
 	#else
-		#define RADON_API									__attribute__(dllimport)
+		#if __has_attribute(dllimport)
+			#define RADON_API								__attribute__(dllimport)
+		#else
+			#define RADON_API									
+		#endif
 	#endif
 #endif
 
@@ -65,7 +75,7 @@
 
 #if __has_c_attribute(deprecated)
 	#define RADON_DEPRECATED								__attribute__((deprecated))
-	#define RADON_DEPRECATED(x)								__attribute__((deprecated(x)))
+	#define RADON_DEPRECATED_(x)							__attribute__((deprecated(x)))
 #else
 	#if __has_attribute(deprecated)
 		#define RADON_DEPRECATED							__attribute__((deprecated))
@@ -74,9 +84,9 @@
 	#endif
 
 	#if __has_extension(attribute_deprecated_with_message)
-		#define RADON_DEPRECATED(x)							__attribute__((deprecated(x)))
+		#define RADON_DEPRECATED_(x)						__attribute__((deprecated(x)))
 	#else
-		#define RADON_DEPRECATED(x)								
+		#define RADON_DEPRECATED_(x)								
 	#endif
 #endif
 
@@ -129,11 +139,11 @@
 #if __has_feature(cxx_noexcept)
 	#define RADON_COMPILER_SUPPORTS_NOEXCEPT				1
 	#define RADON_NOEXCEPT									noexcept
-	#define RADON_NOEXCEPT(x)								noexcept(x)
+	#define RADON_NOEXCEPT_(x)								noexcept(x)
 #else
 	#define RADON_COMPILER_SUPPORTS_NOEXCEPT				0
 	#define RADON_NOEXCEPT									__attribute__((nothrow))
-	#define RADON_NOEXCEPT(x)								//__attribute__((nothrow(x)))
+	#define RADON_NOEXCEPT_(x)								//__attribute__((nothrow(x)))
 #endif
 
 #if __has_feature(cxx_reference_qualified_functions)
@@ -188,3 +198,5 @@ namespace Radon::Config
 }
 
 #endif // !RADON_COMPILER_CLANG_H
+
+#endif

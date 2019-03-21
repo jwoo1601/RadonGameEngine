@@ -36,7 +36,7 @@ namespace Radon::Memory
 		}
 	};
 
-	struct RADONCORE_API SMemoryPoolInitializer
+	struct RADON_API SMemoryPoolInitializer
 	{
 		SMemoryPoolInitializer(void *basePtr, size_t poolSize, size_t blockDataSize) :
 			m_pBase(basePtr),

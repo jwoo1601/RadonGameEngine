@@ -3,15 +3,15 @@
 #ifndef RADON_PLATFORM_WINDOWS_STRING_H
 #define RADON_PLATFORM_WINDOWS_STRING_H
 
-#include "PlatformBaseString.h"
-
 #include <Windows.h>
 
-template <typename CharType>
-class TStringBuffer { };
+#include "PlatformBaseString.h"
+#include "StringBuffer.h"
 
 namespace Radon
 {
+	using namespace String;
+
 	struct SPlatformStringWindows : public SPlatformStringBase
 	{
 		FORCEINLINE static TStringBuffer<char>& ConvertToUTF8(TStringBuffer<char> buffer, const TChar *source, int32 sourceSize)
@@ -21,7 +21,7 @@ namespace Radon
 			{
 				buffer.Reserve(numChars);
 
-				::WideCharToMultiByte(CP_UTF8, 0, source, sourceSize, buffer.Raw(), numChars, NULL, NULL);
+				::WideCharToMultiByte(CP_UTF8, 0, source, sourceSize, buffer.GetRaw(), numChars, NULL, NULL);
 			}
 
 			return buffer;
@@ -34,7 +34,7 @@ namespace Radon
 			{
 				buffer.Reserve(numChars);
 
-				::MultiByteToWideChar(CP_UTF8, 0, source, sourceSize, buffer.Raw(), numChars);
+				::MultiByteToWideChar(CP_UTF8, 0, source, sourceSize, buffer.GetRaw(), numChars);
 			}
 
 			return buffer;
