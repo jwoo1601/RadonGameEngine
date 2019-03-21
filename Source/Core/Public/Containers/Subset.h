@@ -11,7 +11,7 @@ class TList;
 namespace Radon
 {
 	template <template <typename, typename> typename Superset, typename T, typename Allocator>
-	class RADONCORE_API TSubset
+	class RADON_API TSubset
 	{
 		typedef TSubset<Superset, T, Allocator> MyType;
 

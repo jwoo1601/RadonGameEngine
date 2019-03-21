@@ -6,6 +6,7 @@
 #include "RadonCore.h"
 #include "StaticUtils.h"
 #include "StaticString.h"
+#include "RadonTemplates.h"
 
 namespace Radon::Static
 {
@@ -13,7 +14,7 @@ namespace Radon::Static
 	template <typename IntType, TSize Size, IntType Value, TChar... Chars>
 	struct TStaticItoaImpl
 	{
-		static_assert(TIsIntegral<IntType>, "IntType must be an integeral type");
+		static_assert(TIsIntegral<IntType> == true, "IntType must be an integeral type");
 
 		typedef typename TStaticItoaImpl<IntType, Size - 1, Value / 10, TEXT('0') + GetAbsoluteValue(Value) % 10, Chars...>::Type Type;
 	};
@@ -33,14 +34,14 @@ namespace Radon::Static
 	};
 
 	template <int32 Value, TSize NumDigits = CalculateNumOfDigits(Value)>
-	constexpr auto StaticItoa32()
+	constexpr auto Itoa32()
 		-> typename TStaticItoaImpl<int32, NumDigits, Value>::Type::StringType
 	{
 		return TStaticItoaImpl<int32, NumDigits, Value>::Type::MakeStaticString();
 	}
 
 	template <int64 Value, TSize NumDigits = CalculateNumOfDigits(Value)>
-	constexpr auto StaticItoa64()
+	constexpr auto Itoa64()
 		-> typename TStaticItoaImpl<int64, NumDigits, Value>::Type::StringType
 	{
 		return TStaticItoaImpl<int64, NumDigits, Value>::Type::MakeStaticString();
@@ -60,7 +61,7 @@ namespace Radon::Static
 	{
 		static constexpr IntType Result = Value;
 	};
-	
+
 	template <TSize Size>
 	constexpr int32 StaticAtoi32(const TStringLiteral<Size> &str)
 	{

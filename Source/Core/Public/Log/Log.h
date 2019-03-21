@@ -19,7 +19,7 @@ namespace Radon::Log
 		Verbose
 	};
 
-	class RADONCORE_API VLogger
+	class RADON_API VLogger
 	{
 	public:
 

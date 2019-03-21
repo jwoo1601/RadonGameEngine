@@ -8,7 +8,7 @@ namespace Radon
 {
 	// Superclass of any object managed by the engine
 	// NOTE: 
-	class RADONCORE_API VObject
+	class RADON_API VObject
 	{
 	public:
 

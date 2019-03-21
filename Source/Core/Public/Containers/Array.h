@@ -13,12 +13,12 @@ using namespace Radon::Memory;
 
 namespace Radon
 {
-	struct RADONCORE_API SArrayIterator
+	struct RADON_API SArrayIterator
 	{
 
 	};
 
-	struct RADONCORE_API SArrayConstIterator
+	struct RADON_API SArrayConstIterator
 	{
 
 	};

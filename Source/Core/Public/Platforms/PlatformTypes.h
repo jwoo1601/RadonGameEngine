@@ -3,18 +3,16 @@
 #ifndef RADON_PLATFORM_TYPES_H
 #define RADON_PLATFORM_TYPES_H
 
+#include "PlatformConfig.h"
+
 #ifdef RADON_PLATFORM_WINDOWS
 	#include "PlatformWindowsTypes.h"
-
 #elif RADON_PLATFORM_MAC
 	#include "PlatformMacTypes.h"
-
 #elif RADON_PLATFORM_LINUX
 	#include "PlatformLinuxTypes.h"
-
 #else
 	#include "PlatformBaseTypes.h"
-
 #endif
 
 namespace Radon

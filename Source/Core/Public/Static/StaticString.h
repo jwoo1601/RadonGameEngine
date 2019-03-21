@@ -5,6 +5,7 @@
 
 #include "RadonCore.h"
 #include "StaticUtils.h"
+#include "RadonAssert.h"
 
 namespace Radon::Static
 {

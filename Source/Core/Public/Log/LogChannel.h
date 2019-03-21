@@ -7,7 +7,7 @@
 
 namespace Radon::Log
 {
-	class RADONCORE_API VLogChannel
+	class RADON_API VLogChannel
 	{
 
 	};

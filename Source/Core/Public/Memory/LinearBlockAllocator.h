@@ -7,7 +7,7 @@
 
 namespace Radon::Memory
 {
-	struct RADONCORE_API SMemBlock
+	struct RADON_API SMemBlock
 	{
 		void *m_startPtr;
 		SMemBlock *m_prevBlock;
@@ -15,7 +15,7 @@ namespace Radon::Memory
 		size_t m_usedMemory;
 	};
 
-	class RADONCORE_API VLinearBlockAllocator : public VLinearAllocator
+	class RADON_API VLinearBlockAllocator : public VLinearAllocator
 	{
 		INHERITS_FROM(VLinearAllocator)
 

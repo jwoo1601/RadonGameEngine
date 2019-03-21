@@ -3,6 +3,8 @@
 #ifndef RADON_PLATFORM_MEMORY_H
 #define RADON_PLATFORM_MEMORY_H
 
+#include "PlatformConfig.h"
+
 #if RADON_PLATFORM_WINDOWS
 	#include "PlatformWindowsMemory.h"
 #elif RADON_PLATFORM_MAC

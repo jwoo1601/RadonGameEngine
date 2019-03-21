@@ -6,7 +6,7 @@
 
 namespace Radon
 {
-	class RADONCORE_API VEngine
+	class RADON_API VEngine
 	{
 	public:
 

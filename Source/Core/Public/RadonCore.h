@@ -1,5 +1,4 @@
-#ifndef RADON_CORE_H
-#define RADON_CORE_H
+#pragma once
 
 // STL Includes
 #include <memory>
@@ -101,6 +100,4 @@ CLASS_NOT_CM_ASSIGNABLE(className)
 
 #define RADON_IS_EXECUTABLE		0
 #define RADON_BINARY_UNKNOWN	1
-#endif
-
 #endif
