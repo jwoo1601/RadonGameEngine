@@ -3,10 +3,10 @@
 #ifndef RADON_STATIC_CONVERTER_H
 #define RADON_STATIC_CONVERTER_H
 
-#include "RadonCore.h"
+#include "RadonCoreMinimal.h"
+
 #include "StaticUtils.h"
 #include "StaticString.h"
-#include "RadonTemplates.h"
 
 namespace Radon::Static
 {

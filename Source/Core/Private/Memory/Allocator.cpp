@@ -5,12 +5,12 @@
 namespace Radon::Memory
 {
 	// VDefaultAllocator
-	void* VDefaultAllocator::Allocate(size_t size, uint8 alignment, TIndex offset, int32 flag)
+	void* XDefaultAllocator::Allocate(size_t size, uint8 alignment, TIndex offset, int32 flag)
 	{
 		return malloc(size);
 	}
 
-	void VDefaultAllocator::Deallocate(void *ptr)
+	void XDefaultAllocator::Deallocate(void *ptr)
 	{
 		free(ptr);
 	}
@@ -32,9 +32,9 @@ namespace Radon::Memory
 #endif
 
 	// VBaseAllocator
-	VBaseAllocator::VBaseAllocator() { }
+	XBaseAllocator::XBaseAllocator() { }
 
-	VBaseAllocator::VBaseAllocator(const SAllocatorInitializer &initializer)
+	XBaseAllocator::XBaseAllocator(const SAllocatorInitializer &initializer)
 	{
 		m_pBase = initializer.GetBase();
 		m_totalMemorySize = initializer.GetCapacity();
@@ -45,13 +45,13 @@ namespace Radon::Memory
 #endif
 	}
 
-	VBaseAllocator::~VBaseAllocator()
+	XBaseAllocator::~XBaseAllocator()
 	{
 		RADON_ASSERT(m_numAllocations == 0 && m_usedMemory == 0)
 	}
 
 #if RADON_ENABLE_MEMORY_PROFILE
-	void VBaseAllocator::PrintMemoryDump() const
+	void XBaseAllocator::PrintMemorySnapshot(XOutputStream &stream) const
 	{
 
 	}

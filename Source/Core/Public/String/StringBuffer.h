@@ -3,8 +3,14 @@
 #ifndef RADON_STRING_BUFFER_H
 #define RADON_STRING_BUFFER_H
 
-#include "RadonCore.h"
+#include "RadonCoreMinimal.h"
+
+#if RADON_COMPILER_SUPPORTS_PRAGMA_ONCE
+	#pragma once
+#endif
+
 #include "Array.h"
+#include "String.h"
 
 namespace Radon::String
 {
@@ -15,10 +21,17 @@ namespace Radon::String
 
 	public:
 
+		TStringBuffer();
+		TStringBuffer(const CharType *rawString);
+		TStringBuffer(const XString &string);
+
 		FORCEINLINE CharType* GetRaw();
 		FORCEINLINE const CharType* GetRaw() const;
 
 		void Reserve(TSize size);
+		TSize Capacity() const;
+
+		XString ToString();
 		
 	private:
 		TArray<CharType> m_raw;

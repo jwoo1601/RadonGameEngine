@@ -1,0 +1,47 @@
+${
+	#this is a  python code block
+		
+}
+
+// Copyright $(Year) $(Author) All Rights Reserved.
+
+$[#include ](CoreInclude)
+$:-(AdditionalInclude1)
+$:-(AdditionalInclude2)
+$:-(AdditionalInclude3)
+
+$<-(ClassPrefix)
+$@{'I' if ClassType == 'Interface' else 'X'}$(ClassName)
+$# Below Code is Equivalent to one above #$
+${definitions['ClassPrefix'] = 'I' if ClassType == 'Interface' else 'X'}
+
+$-# This is a comment #-$
+${
+	for i in range(10):
+		definitions['AdditionalInclude{0}'.format(i)]
+}
+
+#if RADON_COMPILER_SUPPORTS_PRAGMA_ONCE $-#Comment2#$
+	#pragma once
+#endif
+
+$-#
+
+MultiLine
+Comment1
+
+#-$
+
+namespace Radon$[::](SubNamespace)
+{
+	class $(APIName) $(ClassPrefix)\$(ClassName)
+	{
+	public:
+
+		// Constructors
+		$(ClassName)();
+
+		// Destructors
+		~$(ClassName)();
+	};
+}

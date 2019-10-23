@@ -4,28 +4,28 @@
 
 namespace Radon::Memory
 {
-	VLinearAllocator::VLinearAllocator() { }
+	XLinearAllocator::XLinearAllocator() { }
 
-	VLinearAllocator::VLinearAllocator(const SAllocatorInitializer &initializer)
+	XLinearAllocator::XLinearAllocator(const SAllocatorInitializer &initializer)
 		: Super(initializer)
 	{
-		m_currentPos = m_pBase;
+		m_pCurrent = m_pBase;
 	}
 
-	VLinearAllocator::~VLinearAllocator()
+	XLinearAllocator::~XLinearAllocator()
 	{
 
 	}
 
-	void VLinearAllocator::Clear()
+	void XLinearAllocator::Clear()
 	{
-		m_currentPos = nullptr;
+		m_pCurrent = nullptr;
 		m_usedMemorySize = 0;
 		m_numAllocations = 0;
 	}
 
 #if RADON_ENABLE_MEMORY_PROFILE
-	void VLinearAllocator::PrintMemoryDump() const
+	void XLinearAllocator::PrintMemorySnapshot(XOutputStream &stream) const
 	{
 		printf(
 				"base:                        %p\n"
@@ -35,7 +35,7 @@ namespace Radon::Memory
 				"availableMemorySize:         %d bytes\n"
 				"numAllocations:              %d\n",
 				m_pBase,
-				m_currentPos,
+				m_pCurrent,
 				m_totalMemorySize,
 				m_usedMemorySize,
 				GetAvailableMemorySize(),
@@ -44,39 +44,33 @@ namespace Radon::Memory
 	}
 #endif
 
-	void* VLinearAllocator::Allocate(size_t size, uint8 alignment, TIndex offset, int32 flag)
+	void* XLinearAllocator::Allocate(TSize size, uint8 alignment, TIndex offset, int32 flag)
 	{
-		void *resultPtr = nullptr;
+		void *pResult = nullptr;
 
 		if (size != 0 && alignment != 0)
 		{
-#if MEMORY_PROFILING
-			printf("--------- Allocation Count: %d ---------\n", m_numAllocations);
-			PrintMemoryDump();
-			printf("\n");
-#endif
-			uint8 padding = GetForwardAlignmentPadding(m_currentPos, alignment);
+			uint8 padding = GetForwardAlignmentPadding(m_pCurrent, alignment, offset);
 			if (GetAvailableMemorySize() >= padding + size)
 			{
-				resultPtr = IncrementPointer(m_currentPos, padding);
-#if MEMORY_PROFILING
+				pResult = AddPointer(m_pCurrent, padding);
+#if RADON_ENABLE_MEMORY_PROFILE
 				printf(
 						"alignment:                   %d bytes\n"
 						"padding:                     %d bytes\n"
 						"size:                        %d bytes\n", alignment, padding, size);
 #endif
-
-				m_currentPos = IncrementPointer(resultPtr, size);
+				m_pCurrent = AddPointer(pResult, size);
 				m_usedMemorySize += padding + size;
 				m_numAllocations++;
-#if MEMORY_PROFILING
-				printf("\n");
-				PrintMemoryDump();
-				printf("\n\n");
-#endif
 			}
 		}
 
-		return resultPtr;
+		return pResult;
+	}
+
+	void XLinearAllocator::Deallocate(void *ptr)
+	{
+
 	}
 }

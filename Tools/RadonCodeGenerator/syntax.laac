@@ -1,0 +1,36 @@
+## This is a example definition file for the LAAC (Language Agnostic Automated Code generator)
+## Version: 1.0.0
+
+## Use '##' to comment a single line in your definitions file
+
+## There are currently 2 preprocessors that can be used with the preceding token '#'
+#require 'definitionFile.def'  ## This is used to set the dependency of the definition file currently being parsed
+#require ('definitionFile2.def')
+#undef 'definitionToUndefine'  ## This is used to undefine the definition that was defined before in the current file or other dependencies
+unicode73 = #to_char (73)  ## This is used to convert a unicode char code to the matching character
+ampersand = #char_code_of('&')
+
+## Keys and values are paired with the symbol ':=', and leading and trailing whitespaces are ignored for both Keys and values
+   
+   key := value  ## the leading and trailing whitespaces in both the key and value are ignored here
+
+## You can escape comments using the escape sequence '\'
+pythonStyleComment := \## This should not be treated as a LAAC comment
+
+## You can also escape the definition delimiter ':='
+MaybeBNF := BNFDef \:= (SomeValue)
+
+## Use escape sequence whenever line continuation is needed
+longDefinition := This is a multi-line value \
+for a long definition
+
+## Use another escape sequence before a backslash to treat it as a literal character
+test := #define A B \\ ## the escape sequence here is treated as a literal backslash '\'
+
+## Note: inline definitions (definitions provided as command line arguments) override external definitions (definitions defined in external files)
+
+unicodeCharPoint := #code('\r')
+
+## To be updated:
+## preprocessors (require, undef)
+## reference

@@ -3,6 +3,8 @@ Binaries/
 Intermediate/
 Projects/
 Misc/
+Editor/
+Tools/ReflectionTool
 
 Radon.sln
 premake5.exe

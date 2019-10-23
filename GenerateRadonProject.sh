@@ -2,9 +2,7 @@
 
 BuildSystemExec="premake5"
 BuildScriptFile="Build.lua"
-ProjectType="xcode4"
-
-set echo off
+ProjectType="codelite"
 
 if [ $# -gt 0 ]
 then
@@ -13,7 +11,7 @@ fi
 
 if [ -f $BuildSystemExec ]
 then
-	exec $BuildSystemExec --file=$BuildScriptFile $ProjectType $*
+	exec ./$BuildSystemExec --file=$BuildScriptFile $ProjectType $*
 else
 	echo "failed to locate the build system executable: $BuildSystemExec"
 fi
