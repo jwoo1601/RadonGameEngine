@@ -5,20 +5,18 @@
 
 #include <cassert>
 
-#include "RadonCompiler.h"
+#include "RadonPlatform.h"
 
 #if RADON_COMPILER_MSVC
 	#include <crtdbg.h>
-
 #elif RADON_COMPILER_CLANG
-
 #elif RADON_COMPILER_GCC
-
 #else
-
 #endif
 
-#define RADON_ASSERT(x)
+#define RADON_ASSERT(expr)
+
+#define RADON_ASSERT_MSG(expr, msg)
 
 #define RADON_DEBUG_BREAKPOINT()
 

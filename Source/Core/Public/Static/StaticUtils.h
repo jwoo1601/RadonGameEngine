@@ -3,7 +3,7 @@
 #ifndef RADON_STATIC_UTILS_H
 #define RADON_STATIC_UTILS_H
 
-#include "RadonCore.h"
+#include "RadonCoreMinimal.h"
 
 namespace Radon::Static
 {

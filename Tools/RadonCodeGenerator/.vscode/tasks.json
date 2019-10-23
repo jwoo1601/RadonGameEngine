@@ -1,0 +1,30 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "run: python",
+            "type": "process",
+            "command": "python",
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": "$eslint-stylish",
+            "args": [
+                {
+                    "value":"${file}",
+                    "quoting": "escape",
+                },
+
+                "hi \\hello"
+            ]
+        }
+    ]
+}

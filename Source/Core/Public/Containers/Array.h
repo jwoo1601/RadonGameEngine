@@ -53,7 +53,7 @@ namespace Radon
 		explicit TArray(const AllocatorType &alloc)
 			: m_alloc(alloc),
 			  m_pData(nullptr),
-			  m_size(0),
+			  m_size(0)
 			  m_capacity(0)
 		{
 
@@ -180,73 +180,6 @@ namespace Radon
 		TSize m_size;
 		TSize m_capacity;
 	}; // TArray
-
-
-/*	template <typename T, typename A>
-	FORCEINLINE TArray<T, A>::TArray()
-		: m_alloc(),
-		  m_pData(nullptr),
-		  m_size(0),
-		  m_capacity(0)
-	{
-
-	}
-
-	template <typename T, typename Allocator>
-	explicit TArray<T, Allocator>::TArray(const AllocatorType &alloc)
-		: m_alloc(alloc),
-		  
-	{
-
-	}
-
-	template <typename T, typename Allocator>
-	explicit TArray<T, Allocator>::TArray(TSize size, const AllocatorType &alloc)
-	{
-
-	}
-
-	template <typename T, typename Allocator>
-	TArray<T, Allocator>::TArray(TSize size, const ElementType &value, const AllocatorType &alloc)
-	{
-
-	}
-
-	template <typename T, typename Allocator>
-	TArray<T, Allocator>::TArray(const MyType &other)
-	{
-
-	}
-
-	template <typename T, typename Allocator>
-	TArray<T, Allocator>::TArray(const MyType &other, const AllocatorType &alloc)
-	{
-
-	}
-
-	template <typename T, typename Allocator>
-	TArray<T, Allocator>::TArray(MyType &&other)
-	{
-
-	}
-
-	template <typename T, typename Allocator>
-	TArray<T, Allocator>::TArray(MyType &&other, const AllocatorType &alloc)
-	{
-
-	}
-
-	template <typename T, typename Allocator>
-	TArray<T, Allocator>::TArray(std::initializer_list<ElementType> initList, const AllocatorType &alloc)
-	{
-
-	}
-
-	template <typename T, typename Allocator, typename InputIterator>
-	TArray<T, Allocator>::TArray(InputIterator first, InputIterator last, const AllocatorType &alloc)
-	{
-
-	} */
 }
 
 #endif

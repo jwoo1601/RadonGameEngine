@@ -3,9 +3,15 @@
 #ifndef RADON_CONFIG_H
 #define RADON_CONFIG_H
 
-#include "StaticConverter.h"
+#define RADON_VERSION                                "0.2.0 Alpha"
+                                                                   // MM|RR|PP
+#define RADON_MINIMAL_VERSION                        200           // 00|02|00
 
-#define RADON_VERSION                                100
+#define RADON_VERSION_MAJOR                          0
+#define RADON_VERSION_MINOR                          2
+#define RADON_VERSION_PATCH                          0
+#define RADON_VERSION_TYPE                           "Alpha"
+
 
 #ifdef _DEBUG
 	#define RADON_DEBUG                              1
@@ -28,29 +34,7 @@
 #endif
 
 
-#if RADON_ENABLE_ASSERTION
-	#include "RadonAssert.h"
-#endif
-
-namespace Radon::Config
-{
-	struct SRadonConfig
-	{
-	private:
-		static constexpr auto VersionString = Static::Itoa32<RADON_VERSION>();
-
-	public:
-
-		constexpr int32 GetVersion()
-		{
-			return RADON_VERSION;
-		}
-
-		constexpr auto GetVersionString() -> decltype(VersionString)
-		{
-			return VersionString;
-		}
-	};
-}
+#define RADON_UNICODE                                1
+#define RADON_SIMD                                   1
 
 #endif

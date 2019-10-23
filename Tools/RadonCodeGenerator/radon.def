@@ -1,0 +1,22 @@
+## Radon Definitions for Code Generation
+
+#include_once
+
+##require "test.def"
+##require "test2.def"
+#  require \
+("test.def")
+
+Year := 2019
+Author := Simon Kim
+CoreInclude := "RadonCore.h"
+AdditionalInclude1 :=
+AdditionalInclude2 :=
+AdditionalInclude3 :=
+SubNamespace :=
+APIName := RADON_API
+ClassName :=
+test1 := #to_char(33)
+
+#undef 'test2'
+test2 := #char_code('\n') ## this is a comment

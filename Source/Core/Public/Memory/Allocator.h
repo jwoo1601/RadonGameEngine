@@ -3,16 +3,21 @@
 #ifndef RADON_ALLOCATOR_H
 #define RADON_ALLOCATOR_H
 
-#include "RadonCore.h"
-#include "Name.h"
+//#include "RadonCoreMinimal.h"
+
+//#include "Name.h"
+//#include "OutputStream.h"
 
 namespace Radon::Memory
 {
 	using namespace String;
+	using namespace Serialization;
 
 	class RADON_API IAllocator
 	{
 	public:
+
+		virtual ~IAllocator() { }
 
 		/* IAllocator Interface */
 		// allocates new memory space of {size} (in words) with {alignment}
@@ -23,7 +28,7 @@ namespace Radon::Memory
 		virtual void Deallocate(void *ptr) = 0;
 	};
 
-	class RADON_API VDefaultAllocator : public IAllocator
+	class RADON_API XDefaultAllocator final : public IAllocator
 	{
 		INHERITS_FROM(IAllocator)
 
@@ -72,19 +77,19 @@ namespace Radon::Memory
 		TSize m_reservedSize;
 	};
 
-	class RADON_API VBaseAllocator : public IAllocator
+	class RADON_API XBaseAllocator : public IAllocator
 	{
 		INHERITS_FROM(IAllocator)
 
 	public:
 
-		VBaseAllocator();
-		explicit VBaseAllocator(const SAllocatorInitializer &initializer);
+		XBaseAllocator();
+		explicit XBaseAllocator(const SAllocatorInitializer &initializer);
 
-		virtual ~VBaseAllocator();
+		virtual ~XBaseAllocator();
 
 #if RADON_ENABLE_MEMORY_PROFILE
-		virtual void PrintMemoryDump() const;
+		virtual void PrintMemorySnapshot(XOutputStream &stream) const;
 #endif
 
 		FORCEINLINE void* GetBase() const
@@ -122,13 +127,25 @@ namespace Radon::Memory
 		TSize m_numAllocations;
 	};
 
+	class RADON_API XManagedAllocator : public XBaseAllocator
+	{
+		INHERITS_FROM(XBaseAllocator)
+
+	public:
+
+		virtual void HandleMemoryShortage();
+
+	private:
+		class XMemoryManager &m_manager;
+	};
+
 	
 	// allocates newn memory space for an object of T
 	// NOTE: this function does not call the constructor
 	template <typename T>
 	FORCEINLINE T* AllocateNew(IAllocator &alloc, TIndex offset = 0, int32 flag = 0)
 	{
-		return (T*)alloc.Allocate(sizeof(T), ALIGN_OF(T), offset, flag);
+		return (T*)alloc.Allocate(sizeof(T), RADON_ALIGNOF(T), offset, flag);
 	}
 
 	// allocates new memory space for an array of objects of T with {size}
@@ -136,7 +153,7 @@ namespace Radon::Memory
 	template <typename T>
 	T* AllocateNewArray(IAllocator &arrayAlloc, TSize size, TIndex offset = 0, int32 flag = 0)
 	{
-		// size > 0
+		RADON_ASSERT(size > 0)
 
 		// sets the size of the array header as that of an element so that we can align the memory in a nice way
 		uint8 arrayHeaderSize = sizeof(TSize) / sizeof(T);
@@ -147,7 +164,7 @@ namespace Radon::Memory
 
 		// makes the size of the array stored in the preceding bytes of the elements
 		// | size | arr[0] | arr[1] | arr[2] | ... |
-		T *arr = ((T*)arrayAlloc.Allocate(sizeof(T) * (arrayHeaderSize + size), ALIGN_OF(T), offset, flag)) + arrayHeaderSize;
+		T *arr = ((T*)arrayAlloc.Allocate(sizeof(T) * (arrayHeaderSize + size), RADON_ALIGNOF(T), offset, flag)) + arrayHeaderSize;
 		// stores the size of the array
 		*(((TSize *)arr) - 1) = size;
 
@@ -200,7 +217,7 @@ namespace Radon::Memory
 	template <typename T, typename... Args>
 	FORCEINLINE T* ConstructNew(IAllocator &alloc, Args &&...args)
 	{
-		return new (alloc.Allocate(sizeof(T), alignof(T))) T(std::forward(args...));
+		return new (alloc.Allocate(sizeof(T), RADON_ALIGNOF(T))) T(std::forward(args...));
 	}
 
 
@@ -260,6 +277,42 @@ namespace Radon::Memory
 			DeallocateArray(arrayAlloc, arr);
 		}
 	}
+
+	template <typename T>
+	class TCheckedPtr
+	{
+	public:
+
+		FORCEINLINE TCheckedPtr(T *ptr) : m_ptr(ptr)
+		{
+			RADON_ASSERT(ptr);
+		}
+
+		FORCEINLINE T* operator->()
+		{
+#if RADON_ENABLE_MEMORY_PROFILE
+			RADON_ASSERT(allocator.GetCurrentCycle() == m_cycle);
+#endif
+			return m_ptr;
+		}
+
+	private:
+#if RADON_ENABLE_MEMORY_PROFILE
+		const IAllocator &allocator;
+		uint32 m_cycle;
+#endif
+		T *m_ptr;
+	};
+
+#if RADON_ENABLE_MEMORY_PROFILE
+	class RADON_API XMemoryProfiler
+	{
+	public:
+
+	private:
+		static TLinkedList<const IAllocator&> m_profiledAllocatorList;
+	}
+#endif
 }
 
 #endif

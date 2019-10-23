@@ -13,7 +13,7 @@
 	#include "CompilerDefault.h"
 #endif
 
-namespace Radon::Config
+/* namespace Radon::Config
 {
 #if RADON_COMPILER_MSVC
 	typedef SCompilerConfigMSVC			SCompilerConfig;
@@ -28,6 +28,6 @@ namespace Radon::Config
 	typedef SCompilerConfigDefault		SCompilerConfig;
 
 #endif
-}
+} */
 
 #endif

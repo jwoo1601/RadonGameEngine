@@ -1,6 +1,13 @@
 // Copyright 2019 Simon Kim All Rights Reserved.
 
-#pragma once
+#ifndef RADON_TEMPLATES_H
+#define RADON_TEMPLATES_H
+
+#include "RadonPlatform.h"
+
+#if RADON_COMPILER_SUPPORTS_PRAGMA_ONCE
+	#pragma once
+#endif
 
 #include <type_traits>
 #include <vector>
@@ -147,3 +154,5 @@ namespace Radon
 
 	// std::bind
 }
+
+#endif

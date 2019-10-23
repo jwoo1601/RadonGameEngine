@@ -23,32 +23,28 @@ new(___target_memory_pool.AllocateNew<type>()) type
 
 namespace Radon::Memory
 {
-	struct SMemoryBlock
+	template <typename Allocator>
+	struct TMemoryBlock
 	{
-		void			*m_startPtr;
-		SMemoryBlock	*m_pPrevBlock;
-//		size_t			 m_blockSize; // not necessary
-		size_t			 m_usedMemorySize;
+		typedef Allocator AllocatorType;
 
-		FORCEINLINE size_t GetAvailableMemorySize(size_t blockDataSize) const
+		AllocatorType    allocator;
+		void			*pStart;
+		TMemoryBlock	*pAdjacent;
+		TSize			 blockSize;
+		TSize			 usedMemorySize;
+
+		FORCEINLINE TSize GetAvailableMemorySize() const
 		{
-			return blockDataSize - m_usedMemorySize;
+			return blockSize - usedMemorySize;
 		}
 	};
 
 	struct RADON_API SMemoryPoolInitializer
 	{
-		SMemoryPoolInitializer(void *basePtr, size_t poolSize, size_t blockDataSize) :
-			m_pBase(basePtr),
-			m_poolSize(poolSize),
-			m_blockDataSize(blockDataSize)
-		{
-
-		}
-
-		void			*m_pBase;
-		size_t			 m_poolSize;
-		size_t			 m_blockDataSize;
+		TSize            blockSize;
+		TSize			 initialiBlockCount;
+		uint8            bAllowGrowing : 1;
 	};
 
 	// -----------------------------------------------------------------------------------------------------------
@@ -59,228 +55,262 @@ namespace Radon::Memory
 	// 
 	// -> Align in alignof(Allocator) bytes
 
-	// A: Allocator
-	template <typename A, typename = TEnableIf<TIsDerivedFrom<A, VBaseAllocator>>>
-	class TMemoryPool
+			// | padding |       MemoryBlock       | padding | MemoryBlock | ...
+		//           | header | allocationBody |
+		//                    ^
+		//             allocator.pBase
+
+	class RADON_API XMemoryManager
 	{
-		typedef A AllocatorType;
+		typedef XMemoryManager MyType;
 
 	public:
 
+		virtual void OnPreInitialize();
+		virtual void Initialize(TSize perThreadMemoryPoolCount, TSize memoryBlockSize);
+		virtual void OnPostInitialize();
+
+		virtual void* RequestLocalAllocation(TSize allocationSize);
+		virtual void  RequestLocalDeallocation(void *ptr);
+
+		virtual void* RequestSharedAllocation(TSize allocationSize);
+		virtual void  RequestSharedDeallocation(void *ptr);
+
+		template <typename Allocator>
+		MyType& MakeLocalMemoryPool(SThreadId tid, SName name, TSize blockSize, TSize blockCount, bool bAllowGrowing);
+
+		template <typename Allocator>
+		MyType& MakeSharedMemoryPool(SName name, TSize blockSize, TSize blockCount, bool bAllowGrowing);
+
+		MyType& DeleteLocalMemoryPool(SName name);
+		MyType& DeleteSharedMemoryPool(SName name);
+
+		TMemoryPool GetLocalMemoryPool() const;
+
+		MyType& NewSection();
+
+	private:
+		XFreeListAllocator m_allocator;
+	};
+
+	template <typename Allocator, typename = TEnableIf<TIsDerivedFrom<Allocator, XBaseAllocator>>>
+	class TMemoryPool
+	{
+		//		CLASS_NOT_COPYABLE(TMemoryPool);
+
+	public:
+		typedef Allocator                      AllocatorType;
+		typedef TMemoryBlock<AllocatorType>    BlockType;
+		typedef TMemoryScope<AllocatorType>    ScopeType;
+
 		/* Constructors */
-
-		// constructs a new memory pool of size {blockSize} * {maxBlockCount}
-		TMemoryPool(size_t blockDataSize, size_t maxBlockCount) :
-			TMemoryPool(nullptr, blockDataSize, maxBlockCount)
+		TMemoryPool(const SMemoryPoolInitializer &initializer, XMemoryManager &manager)
+			: m_manager(manager)
 		{
-
+			m_blockSize = initializer.blockSize;
+			m_blockCount = initializer.initialiBlockCount;
+			m_bAllowGrowing = initializer.bAllowGrowing;
 		}
 
-		// constructs a memory pool starting from {pBase} with size {blockSize} * {maxBlockCount}
-		TMemoryPool(void *pBase, size_t blockDataSize, size_t maxBlockCount) :
-			m_pAlloc(nullptr),
-			m_pBase(pBase),
-			m_pCurrentBlock(nullptr),
-			m_blockDataSize(blockDataSize),
-			m_maxBlockCount(maxBlockCount),
-			m_currentBlockCount(0)
+		virtual ~TMemoryPool()
 		{
-			m_blockSize = m_blockDataSize + sizeof(SMemoryBlock) + alignof(SMemoryBlock);
-			m_poolSize = m_blockSize * m_maxBlockCount;
-		}
-
-		/* Destructors */
-
-		~TMemoryPool()
-		{
-
-		}
-
-		/* TMemoryPool Interface */
-
-		virtual bool Initialize()
-		{
-			// {
-			//	 TMemoryScope<VStackAllocator> RenderMemoryScope(&RendererMemoryPool, 1024 * 1024);
-
-			//	 NEW_MEMORY_SCOPE(VLinearAllocator, 1024);
-			//	 NEW_POOLED_MEMORY_SCOPE(VLinearAllocator, &RendererMemoryPool, 1024 * 1024);
-			//	 RenderParameters *paramsPtr = SCOPED_NEW(RenderParameters(0, 5, 4));
-
-			//	 SET_MEMORY_POOL(WorldMemoryPool);
-			//	 VObject *objPtr = POOLED_NEW(VCharacter("David"));
-			//	 VObject *objArr = POOLED_NEW(VCharacter)[5];
-			// }
-
-			// TMemoryPool<VFreeListAllocator> RendererMemoryPool({ MainMemoryPool.GetBasePtr(), 1024 * 1024 * 100, 1024 });
-			// RendererMemoryPool.Initialize();
-			// VRenderParameter *paramsPtr = RendererMemoryPool.Allocate();
-			// ...
-			// RenderMemoryPool.Free(paramsPtr);
-			// ASSERT(!mallocPtr, "This MemoryPool was already initialized!");
-
-			if (!m_pBase)
+			if (m_bInitialized)
 			{
-				m_pBase = SPlatformMemory::Malloc(m_blockSize * m_maxBlockCount + sizeof(SMemoryBlock));
+				m_manager.ReturnAllocatedMemory(m_allocator.GetBase());
 			}
-
-			// alloc ctor parameters?
-			void *pAllocPaddingStart = IncrementPointer(m_pBase, sizeof(AllocatorType));
-			uint8 allocPadding = GetForwardAlignmentPadding(pAllocPaddingStart, alignof(SMemoryBlock));
-
-			m_pAlloc = new(m_pBase) AllocatorType(IncrementPointer(pAllocPaddingStart, allocPadding), m_poolSize - sizeof(AllocatorType));
-
-			/* void *pBlockHeader = IncrementPointer(m_pAlloc->GetBasePtr(), allocPadding);
-			uint8 blockHeaderPadding = GetForwardAlignmentPadding(pBlockHeader, alignof(SMemoryBlock));
-
-			m_pCurrentBlock = new(pBlockHeader) SMemoryBlock(IncrementPointer(pBlockHeader, sizeof(SMemoryBlock) + blockHeaderPadding), nullptr, m_blockSize); */
-			m_curr
-			m_currentBlockCount++;
-
-			return true;
 		}
 
-		virtual void Clear()
+		virtual void Initialize()
 		{
-
-		}
-
-		TMemoryScope<AllocatorType> NewMemoryScope()
-		{
-			return TMemoryScope<AllocatorType>(11);
-		}
-
-		void* AllocateInternal(size_t size, uint8 alignment)
-		{
-			void *pNewAllocation = nullptr;
-
-			if (m_currentBlockCount < m_maxBlockCount)
+			if (!m_bInitialized)
 			{
-//				uint8 dataPadding = GetForwardAlignmentPadding(m_pCurrentBlock->m_startPtr
-				if (!m_pCurrentBlock || m_pCurrentBlock->GetAvailableMemorySize(m_blockDataSize) < size)
+				TSize estimatedSize = EstimateAllocationSize();
+				m_pStart = manager.RequestMemoryAllocation(estimatedSize);
+				m_pEnd = AddPointer(m_pStart, estimatedSize);
+
+				void *pCurrent = m_pStart;
+				for (int i = 0; i < m_blockCount; i++)
 				{
-					pNewBlock->m_pPrevBlock = m_pCurrentBlock;
-					m_pCurrentBlock = pNewBlock;
+					BlockType *pNewBlock = CreateNewBlock(pCurrent);
+
+					if (m_pFreeBlocks)
+					{
+						// forward list
+						m_pFreeBlocks->pAdjacent = pNewBlock;
+					}
+
+					m_pFreeBlocks = pNewBlock;
 				}
+
+				m_bInitialized = true;
 			}
 		}
 
-		template <typename T>
-		FORCEINLINE T* AllocateNew()
+		virtual void Cleanup()
 		{
-			// ASSERT(m_pAlloc, "This MemoryPool is not initialized!");
-			return Memory::AllocateNew<T>(*m_pAlloc);
+			if (m_bInitialized)
+			{
+
+			}
+		}
+
+		ScopeType MakeMemoryScope()
+		{
+
 		}
 
 		template <typename T>
-		FORCEINLINE T* AllocateNewArray(size_t arraySize)
+		FORCEINLINE T* AllocateNew(TIndex offset = 0, int32 flag = 0)
 		{
-			// ASSERT(m_pAlloc, "This MemoryPool is not initialized!");
-			return Memory::AllocateNewArray(*m_pAlloc, arraySize);
+			return DoAllocate(sizeof(T), RADON_ALIGNOF(T), offset, flag);
+		}
+
+		template <typename T>
+		FORCEINLINE T* AllocateNewArray(TSize arraySize, TIndex offset = 0, int32 flag = 0)
+		{
+			return DoAllocate(sizeof(T) * arraySize, RADON_ALIGNOF(T), offset, flag);
 		}
 
 		template <typename T>
 		FORCEINLINE void Free(T *ptr)
 		{
-			// ASSERT(m_pAlloc, "This MemoryPool is not initialized!");
-			// ASSERTS(ptr, "Cannot free nullptr!");
+			DoFree(ptr);
 		}
 
 		template <typename T>
 		FORCEINLINE void FreeArray(T *arr)
 		{
-
+			DoFree(ptr);
 		}
 
-		FORCEINLINE size_t GetBlockSize() const
+		FORCEINLINE TSize GetBlockSize() const
 		{
 			return m_blockSize;
 		}
 
-		FORCEINLINE size_t GetBlockDataSize() const
+		FORCEINLINE TSize GetBlockCount() const
 		{
-			retur m_blockDataSize;
+			return m_blockCount;
 		}
 
-		FORCEINLINE size_t GetPoolSize() const
+		FORCEINLINE TSize GetAllocationSize() const
 		{
-			return m_poolSize;
-		}
-
-		FORCEINLINE size_t GetMaxBlockCount() const
-		{
-			return m_maxBlockCount;
-		}
-
-		FORCEINLINE size_t GetCurrentBlockCount() const
-		{
-			return m_currentBlockCount;
+			return static_cast<TSize>(reinterpret_cast<UIntPtr>(m_pEnd) - reinterpret_cast<UIntPtr>(m_pStart));
 		}
 
 	protected:
 
-		virtual SMemoryBlock* CreateNewBlock()
+		virtual TSize EstimateAllocationSize() const
 		{
-			// assert(m_pAlloc && m_pBase);
+			return (m_blockSize + sizeof(BlockType) + RADON_ALIGNOF(BlockType)) * m_blockCount;
+		}
 
-			SMemoryBlock *pNewBlock = nullptr;
+		virtual BlockType* CreateNewBlock(void *&pCurrent)
+		{
+			RADON_ASSERT(pCurrent);
 
-			if (m_pFreeBlock)
-			{
-				pNewBlock = m_pFreeBlock;
-				m_pFreeBlock = pNewBlock->m_pPrevBlock;
-			}
+			uint8 padding = GetForwardAlignmentPadding(m_pCurrent, RADON_ALIGNOF(BlockType));
+			IncrementPointer(pCurrent, padding);
 
-			else
-			{
-				pNewBlock = new(m_pAlloc->AllocateNew(m_blockSize, alignof(SMemoryBlock))) SMemoryBlock{ m_pAlloc->GetCurrentPos(), nullptr, 0 };
+			BlockType *pNewBlock = new(pCurrent) BlockType;
+			pNewBlock->blockSize = m_blockSize;
+			pNewBlock->pAdjacent = nullptr;
+			pNewBlock->pStart = AddPointer(pNewBlock, sizeof(BlockType));
+			pNewBlock->allocator.initialize(pNewBlock->pStart, pNewBlock->blockSize);
+			pNewBlock->usedMemorySize = 0;
 
-				// check if the block is allocated in the right spot (alloc->currentPos + sizeof(SMemoryBlock))
-			}
+			pCurrent = AddPointer(pNewBlock->pStart, pNewBlock->blockSize);
 
 			return pNewBlock;
 		}
 
-		virtual void DestroyBlock(SMemoryBlock *blockPtr)
+		virtual void* DoAllocate(TSize size, uint8 alignment, TIndex offset, int32 flag)
 		{
-			// usedMemorySize = 0;
+			RAODN_ASSERT(m_bInitialized);
+
+			void *pAllocation = nullptr;
+			TSize minimalAllocationSize = size + offset;
+
+			if (m_blockSize >= minimalAllocationSize)
+			{
+				if (m_pCurrentBlock->GetAvailableMemorySize() < minimalAllocationSize)
+				{
+					if (m_pFreeBlocks)
+					{
+						BlockType *pNewBlock = m_pFreeBlocks;
+						m_pFreeBlocks = m_pFreeBlocks->pNext;
+
+						m_pCurrentBlock->pNext
+					}
+				}
+
+				pAllocation = m_pCurrentBlock->allocator.Allocate(size, alignment, offset, flag);
+				uint8 padding = GetForwardAlignmentPadding(pAllocation, alignment, offset); // or m_pCurrentBlock->allocator.GetPadding(pAllocation, alignment, offset);
+			}
+
+			return pAllocation;
+		}
+
+		virtual void DoFree(void *ptr)
+		{
+			RADON_ASSERT(m_bInitialized, "MemoryPool must be initialized before allocation");
+			RADON_ASSERT(ptr, "nullptr cannot be freed");
+			RADON_ASSERT(ptr >= m_pStart && ptr < m_pEnd);
+
+			constexpr auto dd = sizeof(TMemoryPool<XLinearAllocator>);
 		}
 
 	private:
-		AllocatorType	*m_pAlloc;
-		void			*m_pBase;
-		SMemoryBlock	*m_pCurrentBlock;
-		SMemoryBlock	*m_pFreeBlock;
-		size_t			 m_blockDataSize;
-		size_t			 m_blockSize;
-		size_t			 m_poolSize;
-		size_t			 m_maxBlockCount;
-		size_t			 m_currentBlockCount;
+		// All the allocations made by this memory pool should be within m_pStart <= ptr < m_pEnd 
+		void            *m_pStart;
+		void            *m_pEnd;
+		XMemoryManager   &m_manager;
+
+		BlockType       *m_pUsedBlocks; // backward list: null <- block <- block...
+		BlockType       *m_pFreeBlocks; // forward list: ...block -> block -> null
+		TSize			 m_blockSize;
+		TSize			 m_blockCount;
+
+		uint8            m_bInitialized : 1;
+		// enables dynamic growing of memory pool (this operation has a bit more overhead)
+		uint8            m_bAllowGrowing : 1;
 	};
 
-	void PoolTest()
-	{
-		TMemoryPool<VLinearAllocator> memPool(1024, 16);
-		SET_MEMORY_POOL(memPool);
-
-		class TestClass
+	/*	void PoolTest()
 		{
-		public:
-
-			TestClass()
 			{
+				TMemoryScope<VStackAllocator> RenderMemoryScope(&RendererMemoryPool, 1024 * 1024);
 
+				NEW_MEMORY_SCOPE(VLinearAllocator, 1024);
+				NEW_POOLED_MEMORY_SCOPE(VLinearAllocator, &RendererMemoryPool, 1024 * 1024);
+				RenderParameters *paramsPtr = SCOPED_NEW(RenderParameters(0, 5, 4));
+
+				SET_MEMORY_POOL(WorldMemoryPool);
+				VObject *objPtr = POOLED_NEW(VCharacter("David"));
+				VObject *objArr = POOLED_NEW(VCharacter)[5];
 			}
 
-			TestClass(const char *str)
+			TMemoryPool<VLinearAllocator> memPool(1024, 16);
+			SET_MEMORY_POOL(memPool);
+
+			class TestClass
 			{
+			public:
 
-			}
-		};
+				TestClass()
+				{
 
-		TestClass *testPtr = POOLED_NEW(TestClass)("hi");
-		TestClass *testArr = POOLED_NEW(TestClass)[5];
-	}
+				}
+
+				TestClass(const char *str)
+				{
+
+				}
+			};
+
+			TestClass *testPtr = POOLED_NEW(TestClass)("hi");
+			TestClass *testArr = POOLED_NEW(TestClass)[5];
+		} */
 }
 
 #endif

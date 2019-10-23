@@ -1,37 +1,51 @@
 // Copyright 2019 Simon Kim All Rights Reserved.
 
-#ifdef __clang__
-
 #ifndef RADON_COMPILER_CLANG_H
 #define RADON_COMPILER_CLANG_H
 
 #include "CompilerBase.h"
+
+#define __clang_minimal_version__                            (__clang_major__ * 100 + \
+                                                              __clang_minor__)
+
+#define __clang_full_version__                              (__clang_minimal_version__ * 100 + \
+                                                             __clang_patchlevel__)
 
 #define RADON_SUPPORTED_COMPILER							1
 
 #define RADON_COMPILER_MSVC									0
 #define RADON_COMPILER_CLANG								1
 #define RADON_COMPILER_GCC									0
-#define RADON_COMPILER_MINIMAL_VERSION						__clang_version__
-#define RADON_COMPILER_VERSION								__clang_version__
+#define RADON_COMPILER_MINIMAL_VERSION						__clang_minimal_version__
+#define RADON_COMPILER_VERSION                              __clang_full_version__
+// #define RADON_COMPILER_VERSION_STRING					__clang_version__
 
-#if __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 3)
+#define RADON_COMPILER_SUPPORTS_PRAGMA_ONCE                 1
+
+// clang version >= 3.3
+#if RADON_COMPILER_MINIMAL_VERSION >= 303
 	#define RADON_COMPILER_SUPPORTS_CPP11					1
 #else
 	#define RADON_COMPILER_SUPPORTS_CPP11					0
 #endif
 
-#if __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 4)
+// clang version >= 3.4
+#if RADON_COMPILER_MINIMAL_VERSION >= 304
 	#define RADON_COMPILER_SUPPORTS_CPP14					1
 #else
 	#define RADON_COMPILER_SUPPORTS_CPP14					0
 #endif
 
-#if __clang_major__ >= 7
+// clang version >= 7.0
+#if RADON_COMPILER_MINIMAL_VERSION >= 700
 	#define RADON_COMPILER_SUPPORTS_CPP17					1
 #else
 	#define RADON_COMPILER_SUPPORTS_CPP17					0
 #endif
+
+// Todo: define RADON_INTERNAL in a proper manner (refer to CompilerGCC.h for details)
+
+#define RADON_INTERNAL
 
 #ifdef RADON_CORE
 	#if __has_declspec_attribute(dllexport)
@@ -74,19 +88,18 @@
 #endif
 
 #if __has_c_attribute(deprecated)
-	#define RADON_DEPRECATED								__attribute__((deprecated))
-	#define RADON_DEPRECATED_(x)							__attribute__((deprecated(x)))
+	#define RADON_DEPRECATED(x)								[[deprecated(x)]]
 #else
-	#if __has_attribute(deprecated)
+/*	#if __has_attribute(deprecated)
 		#define RADON_DEPRECATED							__attribute__((deprecated))
 	#else
 		#define RADON_DEPRECATED
-	#endif
+	#endif */
 
 	#if __has_extension(attribute_deprecated_with_message)
-		#define RADON_DEPRECATED_(x)						__attribute__((deprecated(x)))
+		#define RADON_DEPRECATED(x)						    __attribute__((deprecated(x)))
 	#else
-		#define RADON_DEPRECATED_(x)								
+		#define RADON_DEPRECATED(x)								
 	#endif
 #endif
 
@@ -139,11 +152,9 @@
 #if __has_feature(cxx_noexcept)
 	#define RADON_COMPILER_SUPPORTS_NOEXCEPT				1
 	#define RADON_NOEXCEPT									noexcept
-	#define RADON_NOEXCEPT_(x)								noexcept(x)
 #else
 	#define RADON_COMPILER_SUPPORTS_NOEXCEPT				0
 	#define RADON_NOEXCEPT									__attribute__((nothrow))
-	#define RADON_NOEXCEPT_(x)								//__attribute__((nothrow(x)))
 #endif
 
 #if __has_feature(cxx_reference_qualified_functions)
@@ -162,7 +173,8 @@
 	#define RADON_THREAD_LOCAL								//__attribute__((thread))
 #endif
 
-#if __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 9)
+// clang version >= 3.9
+#if RADON_COMPILER_MINIMAL_VERSION >= 309
 	#define CONSTEXPR_IF(x)									if constexpr(x)
 #else
 	#define CONSTEXPR_IF(x)									if (x)
@@ -186,17 +198,4 @@
 	#define RADON_MAYBE_UNUSED								
 #endif
 
-namespace Radon::Config
-{
-	struct SCompilerConfigClang : public SCompilerConfigBase
-	{
-		typedef TCompilerVersion<__clang_major__,
-								 __clang_minor__,
-								 __clang_patchlevel__,
-								 0> Version;
-	};
-}
-
 #endif // !RADON_COMPILER_CLANG_H
-
-#endif

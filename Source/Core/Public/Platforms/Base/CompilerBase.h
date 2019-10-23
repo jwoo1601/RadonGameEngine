@@ -3,30 +3,20 @@
 #ifndef RADON_COMPILER_BASE_H
 #define RADON_COMPILER_BASE_H
 
-#include "PlatformTypes.h"
+#ifdef __has_cpp_attribute
+	#define radon_has_attribute(x)                          __has_cpp_attribute(x)
+#else
+	#define radon_has_attribute(x)                          0
+#endif
 
-namespace Radon::Config
+#define _RADON_ALIGNOF(x)                                  ((offsetof(Radon::Utils::TAlignofImpl<x>, target)) + 1)
+
+namespace Radon::Utils
 {
 	template <typename T>
 	struct TAlignofImpl
 	{
 		T target;
-	};
-
-#define _RADON_ALIGNOF(x) ((offsetof(TAlignofImpl<x>, target)) + 1)
-
-	template <uint32 M, uint32 R, uint32 P, uint32 B>
-	struct TCompilerVersion
-	{
-		static constexpr uint32 Major = M;
-		static constexpr uint32 Revision = R;
-		static constexpr uint32 Patch = P;
-		static constexpr uint32 Build = B;
-	};
-
-	struct SCompilerConfigBase
-	{
-		typedef TCompilerVersion<0, 0, 0, 0> Version;
 	};
 }
 

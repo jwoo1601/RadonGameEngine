@@ -1,0 +1,28 @@
+$# Comments in template files are nested within the block comment symbol '$#' and '#$' #$
+
+$# Any identifiers within '$(...)' are replaced with the matching value #$
+$(key)  $# the entire string '$(key)' is replaced with the matching value of the "key" #$
+
+$# The number of dashes between '$' and '(key)' indicates the number of preceding characters to be removed if the key has a value other than an empty string #$
+$-# Note: This rule is also applied to comments ($#...#$) #$
+12$--(key)  $# the entire string '$--(key)' is replaced with the matching value of the "key" and the preceding 2 characters (12) are removed as well #$
+
+$# Characters in '[]' are denoted as "optional characters", meaning the characters are inserted before the matching value of the key only if there #$
+$# There must be at least one optional character (an empty string in '[]' is not allowed) #$
+$[::](key)
+
+$# You can combine any of the rules above as following: #$
+123$---[C](ClassName)  $# being CString when the value of the key ClassName is 'String' #$
+
+$# Use ${...} to add pre-processed Python code block #$
+$# Note: Python code blocks are processed before any definitions are parsed #$
+${
+    print('This is a Python code block')
+}
+
+$# You can also use a Python replacement code block ($@{...}) to substitute the code block with the evaluated result of the code block
+$@{ 
+    'Version: ' + Template.version
+}
+$# The code block above will be replaced with: #$
+Version: 1.0.0

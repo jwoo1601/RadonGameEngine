@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RADON_LINEAR_ALLOCATOR_H
+#define RADON_LINEAR_ALLOCATOR_H
 
 #include "RadonCore.h"
 
@@ -6,31 +7,31 @@
 
 namespace Radon::Memory
 {
-	class RADON_API VLinearAllocator : public VBaseAllocator
+	class RADON_API XLinearAllocator : public XBaseAllocator
 	{
-		INHERITS_FROM(VBaseAllocator)
+		INHERITS_FROM(XBaseAllocator)
 
 	public:
 		
-		VLinearAllocator();
-		VLinearAllocator(const SAllocatorInitializer &initializer);
-
-		virtual ~VLinearAllocator();
-
 		/* VLinearAllocator Interface */
+		XLinearAllocator();
+		XLinearAllocator(const SAllocatorInitializer &initializer);
+		virtual ~XLinearAllocator();
+
 		virtual void Clear();
 
+		/* VBaseAllocator Interface */
 #if RADON_ENABLE_MEMORY_PROFILE
-		virtual void PrintMemoryDump() const;
+		virtual void PrintMemorySnapshot(XOutputStream &stream) const override;
 #endif
 
-		// IAllocator Interface
+		/* IAllocator Interface */
 		virtual void* Allocate(TSize size, uint8 alignment, TIndex offset, int32 flag) override;
-
-		[[deprecated("use of {Deallocate} is prohibited since this is a linear allocator")]]
-		virtual void Deallocate(void *ptr) override { }
+		virtual void Deallocate(void *ptr) override;
 
 	protected:
-		void *m_currentPos;
+		void *m_pCurrent;
 	};
 }
+
+#endif

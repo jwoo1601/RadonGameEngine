@@ -1,7 +1,5 @@
 // Copyright 2019 Simon Kim All Rights Reserved.
 
-#ifdef _MSC_VER
-
 #ifndef RADON_COMPILER_MSVC_H
 #define RADON_COMPILER_MSVC_H
 
@@ -21,6 +19,7 @@
 #define RADON_COMPILER_MSVC									1
 #define RADON_COMPILER_CLANG								0
 #define RADON_COMPILER_GCC									0
+#define RADON_COMPILER_OTHER                                0
 #define RADON_COMPILER_MINIMAL_VERSION						_MSC_VER
 #define RADON_COMPILER_VERSION								_MSC_FULL_VER
 
@@ -30,9 +29,18 @@
 	#define RADON_API										__declspec(dllimport)
 #endif
 
+#define RADON_INTERNAL
+
 #define FORCEINLINE											__forceinline
 #define NOINLINE											__declspec(noinline)
 #define	NOVTABLE											__declspec(novtable)
+
+
+#if RADON_COMPILER_MINIMAL_VERSION >= 1020
+#define RADON_COMPILER_SUPPORTS_PRAGMA_ONCE                 1
+#else
+#define RADON_COMPILER_SUPPORTS_PRAGMA_ONCE                 0
+#endif
 
 #if RADON_COMPILER_MINIMAL_VERSION >= 1800
 	#define RADON_COMPILER_SUPPORTS_CPP11					1
@@ -56,7 +64,6 @@
 
 	#define RADON_COMPILER_SUPPORTS_NOEXCEPT				1
 	#define RADON_NOEXCEPT									noexcept
-	#define RADON_NOEXCEPT_(x)								noexcept(x)
 
 	#define RADON_COMPILER_SUPPORTS_ALIGNOF					1
 	#define RADON_ALIGNOF(x)								alignof(x)
@@ -70,15 +77,13 @@
 	#define RADON_COMPILER_SUPPORTS_REF_QUALIFIERS			1
 	#define RADON_REF_QUALIFIER(x)							x
 
-	#define RADON_DEPRECATED								[[deprecated]]
-	#define RADON_DEPRECATED_(x)							[[deprecated(x)]]
+	#define RADON_DEPRECATED(x)								[[deprecated(x)]]
 
 #else
 	#define RADON_COMPILER_SUPPORTS_CPP14					0
 
 	#define RADON_COMPILER_SUPPORTS_NOEXCEPT				0
 	#define RADON_NOEXCEPT						
-	#define RADON_NOEXCEPT(x)
 
 	#define RADON_COMPILER_SUPPORTS_ALIGNOF					0
 	#define RADON_ALIGNOF(x)								_RADON_ALIGNOF(x)
@@ -92,7 +97,6 @@
 	#define RADON_COMPILER_SUPPORTS_REF_QUALIFIERS			0
 	#define RADON_REF_QUALIFIER(x)						
 
-	#define RADON_DEPRECATED								__declspec(deprecated)
 	#define RADON_DEPRECATED(x)								__declspec(deprecated(x))
 
 #endif // RADON_COMPILER_MINIMAL_VERSION >= 1900
@@ -123,17 +127,4 @@
 	#define RADON_COMPILER_SUPPORTS_CPP17					0
 #endif // RADON_COMPILER_MINIMAL_VERSION >= 1915
 
-namespace Radon::Config
-{
-	struct SCompilerConfigMSVC : public SCompilerConfigBase
-	{
-		typedef TCompilerVersion<_MSC_FULL_VER / 10000000,
-								 _MSC_FULL_VER / 100000 % 100,
-								 _MSC_FULL_VER % 100000,
-								 _MSC_BUILD> Version;
-	};
-}
-
 #endif // !RADON_COMPILER_MSVC_H
-
-#endif

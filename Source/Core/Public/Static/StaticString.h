@@ -3,9 +3,9 @@
 #ifndef RADON_STATIC_STRING_H
 #define RADON_STATIC_STRING_H
 
-#include "RadonCore.h"
+#include "RadonCoreMinimal.h"
+
 #include "StaticUtils.h"
-#include "RadonAssert.h"
 
 namespace Radon::Static
 {

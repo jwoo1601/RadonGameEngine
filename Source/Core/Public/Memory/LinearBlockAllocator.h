@@ -15,13 +15,13 @@ namespace Radon::Memory
 		size_t m_usedMemory;
 	};
 
-	class RADON_API VLinearBlockAllocator : public VLinearAllocator
+	class RADON_API XLinearBlockAllocator : public XLinearAllocator
 	{
-		INHERITS_FROM(VLinearAllocator)
+		INHERITS_FROM(XLinearAllocator)
 
 	public:
 
-		VLinearBlockAllocator(IAllocator &blockAlloc,
+		XLinearBlockAllocator(IAllocator &blockAlloc,
 							  size_t blockSize,
 							  uint8 blockAlignment) :
 			Super(nullptr, 1),
@@ -33,7 +33,7 @@ namespace Radon::Memory
 			m_totalMemorySize = 0;
 		}
 
-		virtual ~VLinearBlockAllocator()
+		virtual ~XLinearBlockAllocator()
 		{
 
 		}
@@ -43,37 +43,36 @@ namespace Radon::Memory
 			m_usedMemorySize = 0;
 			m_blockSize = 0;
 			m_numAllocations = 0;
-			m_basePtr = nullptr;
-			m_currentPos = nullptr;
+			m_pBase = nullptr;
+			m_pCurrent = nullptr;
 			m_currentBlock = nullptr;
 		}
 
-		virtual void* Allocate(size_t size, uint8 alignment = 8) override
+		virtual void* Allocate(size_t size, uint8 alignment, TIndex offset = 0, int32 flag = 0) override
 		{
-			if (size == 0 || alignment == 0)
-				return nullptr;
+			RADON_ASSERT(size != 0 && alignment != 0);
 
 			if (m_currentBlock == nullptr)
 			{
 				AllocateNewBlock(size, alignment);
 			}
 
-			uint8 padding = GetForwardAlignmentPadding(m_currentPos, alignment);
+			uint8 padding = GetForwardAlignmentPadding(m_pCurrent, alignment, offset);
 
-			if (m_currentBlock->m_usedMemory + padding + size > m_currentBlock->m_size)
+			if (m_currentBlock->m_usedMemory + offset + padding + size > m_currentBlock->m_size)
 			{
 				AllocateNewBlock(size, alignment);
-				padding = GetForwardAlignmentPadding(m_currentPos, alignment);
+				padding = GetForwardAlignmentPadding(m_pCurrent, alignment, offset);
 			}
 
-			void *alignedPtr = IncrementPointer(m_currentPos, padding);
+			void *pAligned = AddPointer(m_pCurrent, padding);
 			size_t allocationSize = padding + size;
 
-			m_currentPos = IncrementPointer(m_currentPos, allocationSize);
+			m_pCurrent = AddPointer(m_pCurrent, allocationSize);
 			m_currentBlock->m_usedMemory += allocationSize;
 			m_usedMemorySize += allocationSize;
 
-			return alignedPtr;
+			return pAligned;
 		}
 
 	protected:
@@ -91,7 +90,7 @@ namespace Radon::Memory
 			}
 
 			uint8 newBlockPadding = GetForwardAlignmentPadding(newBlockPtr, alignof(SMemBlock));
-			SMemBlock *newMemBlockPtr = (SMemBlock*)IncrementPointer(newBlockPtr, newBlockPadding);
+			SMemBlock *newMemBlockPtr = (SMemBlock*)AddPointer(newBlockPtr, newBlockPadding);
 			newMemBlockPtr->m_startPtr = newBlockPtr;
 			newMemBlockPtr->m_prevBlock = m_currentBlock;
 			newMemBlockPtr->m_size = newBlockSize;
@@ -105,7 +104,7 @@ namespace Radon::Memory
 			m_usedMemorySize += newMemBlockPtr->m_usedMemory;
 
 			m_currentBlock = newMemBlockPtr;
-			m_currentPos = m_currentBlock + 1;
+			m_pCurrent = m_currentBlock + 1;
 
 			m_totalMemorySize += newBlockSize;
 
